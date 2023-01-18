@@ -2,11 +2,20 @@ const http = require('http')
 
 const hostname = '127.0.0.1'
 const port = 3000
+const fs = require('fs').promises;
 
 const server = http.createServer((req, res) => {
-  res.statusCode = 200
-  res.setHeader('Content-Type', 'text/plain')
-  res.end('Hello World\n')
+  fs.readFile(__dirname + "/index.html")
+  .then(contents => {
+      res.setHeader("Content-Type", "text/html");
+      res.writeHead(200);
+      res.end(contents);
+  })
+  .catch(err => {
+      res.writeHead(500);
+      res.end(err);
+      return;
+  });
 })
 
 server.listen(port, hostname, () => {
