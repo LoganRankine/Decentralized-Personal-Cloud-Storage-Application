@@ -7,12 +7,54 @@ h1 {
     background-image: linear-gradient(to right top, #051937, #004d7a, #008793, #00bf72, #a8eb12);
 }
 
-.title_page {
+.title_name {
+    font-family: Georgia, 'Times New Roman', Times, serif;
     color: white;
     font-weight: bold;
     text-align: center;
 }
 
-.formbox {
-    
+.login-grid {
+    -ms-grid-row-align: center;
+    -ms-grid-column-align: center;
+
+    display: grid;
+    width: 30%;
+
+    border-radius: 25px;
+    box-shadow: 1px 1px 1px 1px gray;
+    background-color: white;
+
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-bottom: 2rem;
+    margin-inline: auto;
+}
+
+.box-margins {
+    padding-block: 2px;
+}
+
+.box-labels {
+    color: grey;
+    font-family: Arial, Helvetica, sans-serif;
+    width: 30%;
+}
+
+.login-button{
+    background-color: rgb(5, 98, 197);
+    border-radius: 5px;
+    border-color: white;
+    width: 50%;
+    margin-top: 1rem;
+}
+
+.box-inputs {
+    width: 60%;
+    align-self: center;
+}
+
+#top-sign-label{
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
 }
