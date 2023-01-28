@@ -8,14 +8,26 @@ const server = http.createServer(async (req, res) => {
   
   switch (req.url) {
     case "/":
-        var contents = await fs.readFile("login.html");
+        var contents = await fs.readFile("homepage/login.html");
         res.end(contents);
         break;
     case "/style.css":
-        var contents = await fs.readFile("style.css");
+        var contents = await fs.readFile("homepage/style.css");
         res.end(contents);
         break;
+    case '/createaccount-page/create-account.html':
+      var contents = await fs.readFile("homepage/createaccount-page/create-account.html");
+        res.end(contents);
+      break;
+    case '/createaccount-page/createpage-style.css':
+      var contents = await fs.readFile("homepage/createaccount-page/createpage-style.css");
+      res.end(contents);
+      break;
     case "/index.js":
+        var contents = await fs.readFile("index.js");
+        res.end(contents);
+        break;
+  case "/index.js":
         var contents = await fs.readFile("index.js");
         res.end(contents);
         break;
