@@ -1,5 +1,7 @@
 const express = require('express');
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+var formidable = require('formidable');
+var waitOn = require('wait-on');
 var fs = require('fs');
 
 const app = express();
@@ -10,11 +12,31 @@ app.use(express.urlencoded({extended:false}));
 var mysql = require('mysql');
 const { Console } = require('console');
 
+let user_directoty;
+
 var connection = mysql.createConnection({
   host: "127.0.0.1",
   user: "root",
   password: "password",
   database: "userprofile"
+});
+
+app.post('/accountmain-page/fileupload', async (req,res) => {
+  var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+      var oldpath = files.filetoupload.filepath;
+      var newpath = user_directoty +"/"+ files.filetoupload.originalFilename;
+      fs.rename(oldpath, newpath, function (err) {
+        if (err) throw err;
+        res.write('File uploaded and moved!');
+        res.end();
+      });
+    });
+});
+
+app.get('/accountmain-page/Image_1.JPG', async (req, res) => {
+  var content = __dirname + '/homepage/accountmain-page/Image_2.JPG';
+  await res.sendFile(__dirname + '/homepage/accountmain-page/Image_1.JPG');
 });
 
 app.get('/', async (req, res) => {
@@ -31,6 +53,14 @@ app.get('/createaccount-page/create-account.html', async (req, res) => {
 
 app.get('/createaccount-page/createpage-style.css', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/createaccount-page/createpage-style.css');
+});
+
+app.get('/accountmain-page/accountmain.html', async (req, res) => {
+  await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain.html');
+});
+
+app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
+  await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain-style.css');
 });
 
 app.post('/check', async (req, res)=> {
@@ -57,17 +87,25 @@ async function UserSignIn(res,user, password){
     console.log("connected");
   });
 
-  connection.query("SELECT * FROM user", async function (err, result, fields) {
+  //check if user exists
+  connection.query("SELECT * FROM user WHERE username=" + "'" + user + "'", async function (err, result, fields) {
     if (err) throw err;
-    userProfiles = result;
-    console.log(result);
+    console.log("User found, checking password");
+    var dataRecieved = result[0];
+    if(await comparePassword(password, dataRecieved.password) == true){
+      res.redirect('http://localhost:3000/accountmain-page/accountmain.html');
+      user_directoty = dataRecieved.userDirectory;
+      //res.sendFile(__dirname + '/homepage/accountmain-page/accountmain.html');;
+    }
+    //res.send(userInfo);
   });
-
-  connection.query('INSERT INTO user SET ?', userDetails, async function(err,result){
-    if(err) throw err;
-    console.log("user added")
-    });
 }
+
+
+async function comparePassword(password, hash) {
+      const result = await bcrypt.compare(password, hash);
+      return result;
+  }
 
 async function UserValidation(res,user, password, confirm_password){
   if(password != confirm_password){

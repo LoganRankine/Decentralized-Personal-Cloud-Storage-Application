@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/LoganRankine/Decentralized-Personal-Cloud-Storage-Application#readme",
   "dependencies": {
-    "bcrypt": "^5.1.0"
+    "bcrypt": "^5.1.0",
+    "formidable": "^2.1.1"
   }
 }

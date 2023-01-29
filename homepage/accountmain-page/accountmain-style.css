@@ -1,0 +1,28 @@
+.background{
+    background-color: #4158D0;
+    background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+}
+
+.image_button{
+    -ms-grid-row-align: center;
+    -ms-grid-column-align: center;
+
+    display: grid;
+    width: 9rem;
+    height: 10rem;
+
+    border-radius: 5px;
+    box-shadow: 1px 1px 1px 1px gray;
+    background-color: white;
+
+    padding-left: 1mm;
+    padding-right: 1mm;
+    padding-bottom: 1mm;
+    padding-top: 1mm;
+    margin-inline: auto;
+}
+
+.image{
+    max-width: 100%;
+    height: auto;
+}
