@@ -1,0 +1,23 @@
+{
+  "name": "decentralized-personal-cloud-storage-application",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LoganRankine/Decentralized-Personal-Cloud-Storage-Application.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LoganRankine/Decentralized-Personal-Cloud-Storage-Application/issues"
+  },
+  "homepage": "https://github.com/LoganRankine/Decentralized-Personal-Cloud-Storage-Application#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.0"
+  }
+}

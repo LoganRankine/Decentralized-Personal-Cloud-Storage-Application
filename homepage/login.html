@@ -8,19 +8,19 @@
         <h1 class="title_name">PersonalCloud</h1>
 
         <div>
-            <article class="login-grid">
+            <form method="post" action="/validate" class="login-grid">
                 <h1 id="top-sign-label" class="box-margins">Sign in or Create an Account</h1>
 
                 <label class="box-labels">Username</label>
 
-                <input class="username-input box-inputs" type="text">
+                <input class="username-input box-inputs" type="text" name="username" required>
 
                 <label class="box-labels">Password</label>
 
-                <input class="password-input box-inputs" type="text">
+                <input class="password-input box-inputs" type="text" name="password" required>
 
                 <button id ="createAccount" class="login-button" onclick="">Sign in</button>
-            </article>
+            </form>
         </div>
 
         <a href="createaccount-page/create-account.html">new page</a>

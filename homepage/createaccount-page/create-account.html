@@ -1,28 +1,31 @@
 <html>
+
     <head>
         <Title>Create account</Title>
         <link rel="stylesheet" href="createpage-style.css">
+        <script src="create-account-logic.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     </head>
     <body class="background">
         <h1 class="title_name">PersonalCloud</h1>
 
-        <article class="createaccount-grid">
+        <form action="/check" method="POST" class="createaccount-grid">
             <h1 id="top-sign-label" class="box-margins">Create Account</h1>
 
-            <label class="box-labels">Username</label>
+            <label class="box-labels" >Username</label>
 
-            <input id="username-input" type="text">
+            <input type="text" name="username" required>
 
-            <label class="box-labels">Password</label>
+            <label class="box-labels" >Password</label>
 
-            <input id="password-input" type="text">
+            <input type="text" name="password" required>
 
             <label class="box-labels">Confirm Password</label>
 
-            <input id="confirm-password-input" type="text">
+            <input type="text" name="confirmpassword" required>
 
-            <button class ="createAccount" onclick="">Create</button>
-        </article>
+            <button id ="create" class ="createAccount" onclick="">Create</button>
+        </form>
 
     </body>
 
