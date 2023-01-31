@@ -6,11 +6,19 @@
     <body class="background">
 
         <div class="top_navbar">
+            <a><%= userName %></a>
+
             <form action="fileupload" method="post" enctype="multipart/form-data">
                 <input for="fileupload" src="homepage\ImageAssets/add_button.png" type="file" name="filetoupload">
                 <input type="submit">
             </form>
         </div>
+
+        <a class="image_button">
+            <img class="image" width="200" height="200" src="<%= ImageName %>">
+            <label>Image_2.jpg</label>
+        </a>
+
         <!--
         <script src="accountmain-script.js"></script>
         -->

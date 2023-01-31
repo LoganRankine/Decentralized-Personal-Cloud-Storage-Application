@@ -9,6 +9,7 @@ const { body, validationResult } = require('express-validator');
 
 const app = express();
  
+app.set('viewengine', 'ejs');
 app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
@@ -17,6 +18,7 @@ var mysql = require('mysql');
 const { Console } = require('console');
 
 let user_directoty;
+let currentUser;
 
 var connection = mysql.createConnection({
   host: "127.0.0.1",
@@ -49,7 +51,8 @@ app.get('/accountmain-page/Image_1.JPG', async (req, res) => {
 });
 
 app.get('/', async (req, res) => {
-  await res.sendFile(__dirname + '/homepage/login.html');
+  //await res.sendFile(__dirname + '/homepage/login.html');
+  await res.render('login.ejs');
 });
 
 app.get('/style.css', async (req, res) => {
@@ -65,14 +68,40 @@ app.get('/createaccount-page/createpage-style.css', async (req, res) => {
 });
 
 app.get('/accountmain-page/accountmain.html', async (req, res) => {
-  await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain.html');
+  //await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain.html');
+  if(currentUser == null){
+    res.send("Session expired");
+    res.redirect('http://localhost:3000/');
+  }
+  else{
+    var file = await GetUserImages(user_directoty);
+    let promise = new Promise(function(resolve, reject){
+      var file = GetUserImages(user_directoty);
+      if(file.length){
+        
+      }
+    })
+    res.render('accountmain.ejs', {userName: currentUser, ImageName:  await file[0]});
+  } 
+  
 });
+
+ async function GetUserImages(p_userDirectoty){
+  await fs.readdir(p_userDirectoty, (error,files)=>{
+    if(error) console.log(error)
+    files.forEach(file=>console.log(file))
+    
+    return Promise.resolved(files[0]);
+  })
+}
 
 app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain-style.css');
 });
 
-
+app.get('/accountmain-page/accountmain-script.js', async (req,res) => {
+  await res.send(__dirname + '/homepage/accountmain-page/accountmain-script.js');
+});
 
 app.post('/createAccount', async (req, res)=> {
   console.log(req.body);
@@ -112,7 +141,8 @@ async function UserSignIn(res,user, password){
         //Takes user to account and sets their directory
         res.redirect('http://localhost:3000/accountmain-page/accountmain.html');
         user_directoty = dataRecieved.userDirectory;
-        console.log('User signed in:', user)
+        currentUser = user;
+        console.log('User signed in:', user);
       }
       else{
         res.send("Incorrect username or password");
