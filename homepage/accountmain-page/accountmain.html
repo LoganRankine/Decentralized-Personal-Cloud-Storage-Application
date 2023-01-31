@@ -5,15 +5,22 @@
     </head>
     <body class="background">
 
+        <div class="top_navbar">
+
+            <h1 id="Title">Personal Cloud</h1>
+
+            <form action="fileupload" method="post" enctype="multipart/form-data">
+                <input for="fileupload" src="homepage\ImageAssets/add_button.png" type="file" name="filetoupload">
+                <input type="submit">
+            </form>
+        </div>
+
         <a class="image_button">
             <img class="image" src="http://localhost:3000/accountmain-page/Image_1.JPG" alt="River" width="200" height="200">
             <label>Image_2.jpg</label>
         </a>
 
-        <form action="fileupload" method="post" enctype="multipart/form-data">
-            <input type="file" name="filetoupload"><br>
-            <input type="submit">
-        </form>
+        
 
     </body>
 </html>

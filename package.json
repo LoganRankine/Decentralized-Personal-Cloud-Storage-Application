@@ -19,6 +19,8 @@
   "homepage": "https://github.com/LoganRankine/Decentralized-Personal-Cloud-Storage-Application#readme",
   "dependencies": {
     "bcrypt": "^5.1.0",
+    "express-session": "^1.17.3",
+    "express-validator": "^6.14.3",
     "formidable": "^2.1.1"
   }
 }

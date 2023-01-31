@@ -3,9 +3,13 @@ const bcrypt = require("bcrypt");
 var formidable = require('formidable');
 var waitOn = require('wait-on');
 var fs = require('fs');
+const session = require('express-session');
+const { body, validationResult } = require('express-validator');
+
 
 const app = express();
  
+app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 
@@ -19,6 +23,11 @@ var connection = mysql.createConnection({
   user: "root",
   password: "password",
   database: "userprofile"
+});
+
+connection.connect(function(err) {
+  if (err) throw err;
+  console.log("connected");
 });
 
 app.post('/accountmain-page/fileupload', async (req,res) => {
@@ -63,12 +72,14 @@ app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain-style.css');
 });
 
-app.post('/check', async (req, res)=> {
+
+
+app.post('/createAccount', async (req, res)=> {
   console.log(req.body);
   UserValidation(res,req.body.username, req.body.password,req.body.confirmpassword);
 });
 
-app.post('/validate', async (req, res)=> {
+app.post('/signIn', async (req, res)=> {
   console.log(req.body);
   UserSignIn(res,req.body.username, req.body.password);
 });
@@ -82,25 +93,34 @@ app.listen(3000, () => {
 });
 
 async function UserSignIn(res,user, password){
-  connection.connect(function(err) {
-    if (err) throw err;
-    console.log("connected");
-  });
-
   //check if user exists
   connection.query("SELECT * FROM user WHERE username=" + "'" + user + "'", async function (err, result, fields) {
     if (err) throw err;
-    console.log("User found, checking password");
-    var dataRecieved = result[0];
-    if(await comparePassword(password, dataRecieved.password) == true){
-      res.redirect('http://localhost:3000/accountmain-page/accountmain.html');
-      user_directoty = dataRecieved.userDirectory;
-      //res.sendFile(__dirname + '/homepage/accountmain-page/accountmain.html');;
+
+    //checks if anything is recieved back. Most likeley means username doesn't exist
+    if(result.length == 0){
+      res.send("Incorrect username or password");
+      console.log("Username doesn't exist")
     }
-    //res.send(userInfo);
+    // username exists, checking password
+    else{
+      var dataRecieved = result[0];
+
+      //compares password recieved from user to password recieved from server
+      if(await comparePassword(password, dataRecieved.password) == true){
+
+        //Takes user to account and sets their directory
+        res.redirect('http://localhost:3000/accountmain-page/accountmain.html');
+        user_directoty = dataRecieved.userDirectory;
+        console.log('User signed in:', user)
+      }
+      else{
+        res.send("Incorrect username or password");
+        console.log('password incorrect')
+      }
+    } 
   });
 }
-
 
 async function comparePassword(password, hash) {
       const result = await bcrypt.compare(password, hash);
@@ -114,37 +134,34 @@ async function UserValidation(res,user, password, confirm_password){
   }
   else{
     console.log('password matches')
-    res.send("")
     CreateUserAccount(user,password)
+    res.redirect('http://localhost:3000/');
   }
 }
 
 async function CreateUserAccount(user,password){
   plaintextPassword = password;
-  connection.connect(function(err) {
-    if (err) throw err;
-    console.log("connected");
-  });
-
   var userdirectory = __dirname + "/UserFolders/"+ user;
 
   //Hashing passowrd
   bcrypt.genSalt(10, async (err, salt) => {
         bcrypt.hash(plaintextPassword, salt, async function(err, hash) {
+            //Create JSON object with details to add user to database
             const userDetails = {username: user, password: hash, userdirectory}
+
+            //Insert new user details into SQL database
             connection.query('INSERT INTO user SET ?', userDetails, async function(err,result){
               if(err) throw err;
-              console.log("user added")
+              console.log("user added:", user)
               })
         });
     });
 
     //Create directory where user files stored
-    var folderName = user;
     try {
       if (!fs.existsSync(userdirectory)) {
         fs.mkdirSync(userdirectory);
-        console.log("Created user folder", user)
+        console.log("Created user folder:", user)
       }
     } catch (err) {
       console.error(err);

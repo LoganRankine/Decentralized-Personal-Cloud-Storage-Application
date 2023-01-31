@@ -3,6 +3,29 @@
     background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
 }
 
+#Title{
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    color: blueviolet;
+    font-weight: bold;
+    text-align: center;
+}
+
+.top_navbar input {
+    float: right;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+
+.top_navbar{
+    background-color: white;
+    overflow: hidden;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
 .image_button{
     -ms-grid-row-align: center;
     -ms-grid-column-align: center;
