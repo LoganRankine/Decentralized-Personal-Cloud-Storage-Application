@@ -1,10 +1,12 @@
 const express = require('express');
 const bcrypt = require("bcrypt");
-var formidable = require('formidable');
-var waitOn = require('wait-on');
-var fs = require('fs');
+let formidable = require('formidable');
+let waitOn = require('wait-on');
+let fs = require('fs');
+var http = require('http');
 const session = require('express-session');
 const { body, validationResult } = require('express-validator');
+
 
 
 const app = express();
@@ -53,9 +55,17 @@ app.get('/accountmain-page/Image_1.JPG', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/accountmain-page/Image_1.JPG');
 });
 
+app.get('/getimages', async (req,res)=>{
+  res.redirect('http://localhost:3001/imageplease');
+  //res.send('image requested');
+})
+
 app.get('/', async (req, res) => {
   //await res.sendFile(__dirname + '/homepage/login.html');
+  //res.redirect('http://localhost:3001/allowRequests')
+  //res.send('GET localhost:3001/CreateUserDirectory')
   await res.render('login.ejs');
+  
 });
 
 app.get('/style.css', async (req, res) => {
@@ -148,7 +158,7 @@ app.all('*', function (req, res) {
   }
 });
 
-app.listen(3000, () => {
+app.listen(3000, (req,res) => {
   console.log('Our express server is up on port 3000');
 });
 
