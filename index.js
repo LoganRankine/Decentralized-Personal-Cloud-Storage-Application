@@ -8,17 +8,20 @@ const { body, validationResult } = require('express-validator');
 
 
 const app = express();
- 
+
 app.set('viewengine', 'ejs');
 app.use(express.json());
 app.use(express.json());
-app.use(express.urlencoded({extended:false}));
+app.use(express.urlencoded({ extended: false }));
 
 var mysql = require('mysql');
 const { Console } = require('console');
 
 let user_directoty;
 let currentUser;
+var imageSentCounter;
+var fileimage;
+let ImageInfo;
 
 var connection = mysql.createConnection({
   host: "127.0.0.1",
@@ -27,22 +30,22 @@ var connection = mysql.createConnection({
   database: "userprofile"
 });
 
-connection.connect(function(err) {
+connection.connect(function (err) {
   if (err) throw err;
   console.log("connected");
 });
 
-app.post('/accountmain-page/fileupload', async (req,res) => {
+app.post('/accountmain-page/fileupload', async (req, res) => {
   var form = new formidable.IncomingForm();
-    form.parse(req, function (err, fields, files) {
-      var oldpath = files.filetoupload.filepath;
-      var newpath = user_directoty +"/"+ files.filetoupload.originalFilename;
-      fs.rename(oldpath, newpath, function (err) {
-        if (err) throw err;
-        res.write('File uploaded and moved!');
-        res.end();
-      });
+  form.parse(req, function (err, fields, files) {
+    var oldpath = files.filetoupload.filepath;
+    var newpath = user_directoty + "/" + files.filetoupload.originalFilename;
+    fs.rename(oldpath, newpath, function (err) {
+      if (err) throw err;
+      res.write('File uploaded and moved!');
+      res.end();
     });
+  });
 });
 
 app.get('/accountmain-page/Image_1.JPG', async (req, res) => {
@@ -68,75 +71,103 @@ app.get('/createaccount-page/createpage-style.css', async (req, res) => {
 });
 
 app.get('/accountmain-page/accountmain.html', async (req, res) => {
+  
   //await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain.html');
-  if(currentUser == null){
+  
+  if (currentUser == null) {
     res.send("Session expired");
     res.redirect('http://localhost:3000/');
   }
-  else{
-    var file = await GetUserImages(user_directoty);
-    let promise = new Promise(function(resolve, reject){
-      var file = GetUserImages(user_directoty);
-      if(file.length){
-        
-      }
-    })
-    res.render('accountmain.ejs', {userName: currentUser, ImageName:  await file[0]});
-  } 
-  
+  else {
+    GetUserImages(user_directoty, res);
+  }
+
 });
 
- async function GetUserImages(p_userDirectoty){
-  await fs.readdir(p_userDirectoty, (error,files)=>{
-    if(error) console.log(error)
-    files.forEach(file=>console.log(file))
-    
-    return Promise.resolved(files[0]);
-  })
+var file;
+
+async function GetUserImages(p_userDirectoty, res) {
+  let myPromise = new Promise(function (resolve) {
+    fs.readdir(p_userDirectoty, (error, files) => {
+      if (error) console.log(error)
+      files.forEach(file => console.log(file))
+      if (files != undefined) {
+        resolve(files);
+        /*
+        ImageInfo = [{
+          name: files[0], url: currentUser +'/'+ files[0],
+        }, {
+          name: files[1], url: currentUser +'/'+ files[1],
+        }, {
+          name: files[2], url: currentUser +'/'+ files[2],
+        }];
+        */
+      
+        res.render('accountmain.ejs', { userName: currentUser, Image: files, ImageSource: '/getimages', ImageName: files[0]});
+        file = files;
+      }
+      else{
+        //there is no files
+        res.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
+      }
+    })
+  });
+  file = await myPromise.then();
 }
+
+app.get('/getimages', async (req, res) => {
+  res.sendFile(user_directoty +'/'+ file[1]);
+  console.log('Images sent', file[1])
+});
 
 app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain-style.css');
 });
 
-app.get('/accountmain-page/accountmain-script.js', async (req,res) => {
+app.get('/accountmain-page/accountmain-script.js', async (req, res) => {
   await res.send(__dirname + '/homepage/accountmain-page/accountmain-script.js');
 });
 
-app.post('/createAccount', async (req, res)=> {
+app.post('/createAccount', async (req, res) => {
   console.log(req.body);
-  UserValidation(res,req.body.username, req.body.password,req.body.confirmpassword);
+  UserValidation(res, req.body.username, req.body.password, req.body.confirmpassword);
 });
 
-app.post('/signIn', async (req, res)=> {
+app.post('/signIn', async (req, res) => {
   console.log(req.body);
-  UserSignIn(res,req.body.username, req.body.password);
+  UserSignIn(res, req.body.username, req.body.password);
 });
 
-app.all('*', function(req, res) {
-  res.send("404 not found")
+app.all('*', function (req, res) {
+  if(req.url.toString().includes(currentUser)){
+    var remove = user_directoty + req.url.toString().replace('accountmain-page/'+currentUser+'/' ,'/');
+    res.sendFile(remove);
+  }
+  else{
+    res.send("404 not found")
+  }
 });
 
 app.listen(3000, () => {
   console.log('Our express server is up on port 3000');
 });
 
-async function UserSignIn(res,user, password){
+async function UserSignIn(res, user, password) {
   //check if user exists
   connection.query("SELECT * FROM user WHERE username=" + "'" + user + "'", async function (err, result, fields) {
     if (err) throw err;
 
     //checks if anything is recieved back. Most likeley means username doesn't exist
-    if(result.length == 0){
+    if (result.length == 0) {
       res.send("Incorrect username or password");
       console.log("Username doesn't exist")
     }
     // username exists, checking password
-    else{
+    else {
       var dataRecieved = result[0];
 
       //compares password recieved from user to password recieved from server
-      if(await comparePassword(password, dataRecieved.password) == true){
+      if (await comparePassword(password, dataRecieved.password) == true) {
 
         //Takes user to account and sets their directory
         res.redirect('http://localhost:3000/accountmain-page/accountmain.html');
@@ -144,58 +175,73 @@ async function UserSignIn(res,user, password){
         currentUser = user;
         console.log('User signed in:', user);
       }
-      else{
+      else {
         res.send("Incorrect username or password");
         console.log('password incorrect')
       }
-    } 
+    }
   });
 }
 
 async function comparePassword(password, hash) {
-      const result = await bcrypt.compare(password, hash);
-      return result;
-  }
+  const result = await bcrypt.compare(password, hash);
+  return result;
+}
 
-async function UserValidation(res,user, password, confirm_password){
-  if(password != confirm_password){
+async function UserValidation(res, user, password, confirm_password) {
+  var passwordMatch = false;
+  if (password != confirm_password) {
     console.log("passwords don't match")
     res.send("Passowrds don't match, redirecting...")
   }
-  else{
+  else {
+    passwordMatch = true;
     console.log('password matches')
-    CreateUserAccount(user,password)
-    res.redirect('http://localhost:3000/');
+
+  }
+  //check if user exists already
+  if (passwordMatch == true) {
+    connection.query("SELECT * FROM user WHERE username=" + "'" + user + "'", async function (err, result, fields) {
+      if (err) throw err;
+      if (result.length == 0) {
+        CreateUserAccount(user, password)
+        res.redirect('http://localhost:3000/');
+      }
+      else {
+        console.log("user already exists:", user)
+        res.send("username already exists")
+      }
+    })
   }
 }
 
-async function CreateUserAccount(user,password){
+async function CreateUserAccount(user, password) {
   plaintextPassword = password;
-  var userdirectory = __dirname + "/UserFolders/"+ user;
+  var userdirectory = __dirname + "/UserFolders/" + user;
 
   //Hashing passowrd
   bcrypt.genSalt(10, async (err, salt) => {
-        bcrypt.hash(plaintextPassword, salt, async function(err, hash) {
-            //Create JSON object with details to add user to database
-            const userDetails = {username: user, password: hash, userdirectory}
+    bcrypt.hash(plaintextPassword, salt, async function (err, hash) {
+      //Create JSON object with details to add user to database
+      const userDetails = { username: user, password: hash, userdirectory }
 
-            //Insert new user details into SQL database
-            connection.query('INSERT INTO user SET ?', userDetails, async function(err,result){
-              if(err) throw err;
-              console.log("user added:", user)
-              })
-        });
+      //Insert new user details into SQL database
+      connection.query('INSERT INTO user SET ?', userDetails, async function (err, result) {
+        if (err) throw err;
+        console.log("user added:", user)
+      })
     });
+  });
 
-    //Create directory where user files stored
-    try {
-      if (!fs.existsSync(userdirectory)) {
-        fs.mkdirSync(userdirectory);
-        console.log("Created user folder:", user)
-      }
-    } catch (err) {
-      console.error(err);
+  //Create directory where user files stored
+  try {
+    if (!fs.existsSync(userdirectory)) {
+      fs.mkdirSync(userdirectory);
+      console.log("Created user folder:", user)
     }
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /*

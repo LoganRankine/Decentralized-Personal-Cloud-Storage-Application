@@ -36,7 +36,7 @@ body{
     border-radius: 10px;
     white-space: nowrap;
 }
-
+/*
 .image_button{
     -ms-grid-row-align: center;
     -ms-grid-column-align: center;
@@ -55,8 +55,23 @@ body{
     padding-top: 1mm;
     margin-inline: auto;
 }
+*/
 
-.image{
-    max-width: 100%;
-    height: auto;
+.gallery{
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 5vw);
+}
+
+.gallery_grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 5vw);
+
+    grid-gap: 15px;
+    border-radius: 5px;
+    box-shadow: 1px 1px 1px 1px gray;
+    background-color: white;
 }
