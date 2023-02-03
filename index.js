@@ -17,14 +17,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 var mysql = require('mysql');
-const { Console } = require('console');
 
 let user_directoty;
 let currentUser;
-var imageSentCounter;
-var fileimage;
-let ImageInfo;
+let createUserDirectory
+let userDirectoryFromServer = ''
 
+//Create connection to MySQL database
 var connection = mysql.createConnection({
   host: "127.0.0.1",
   user: "root",
@@ -32,10 +31,17 @@ var connection = mysql.createConnection({
   database: "userprofile"
 });
 
+//Connect to MySQL database
 connection.connect(function (err) {
   if (err) throw err;
   console.log("connected");
 });
+
+//options to send request to storage server
+let options;
+
+//Sends request to server to create new directory when a user is created
+let createNewDirectory 
 
 app.post('/accountmain-page/fileupload', async (req, res) => {
   var form = new formidable.IncomingForm();
@@ -55,17 +61,8 @@ app.get('/accountmain-page/Image_1.JPG', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/accountmain-page/Image_1.JPG');
 });
 
-app.get('/getimages', async (req,res)=>{
-  res.redirect('http://localhost:3001/imageplease');
-  //res.send('image requested');
-})
-
 app.get('/', async (req, res) => {
-  //await res.sendFile(__dirname + '/homepage/login.html');
-  //res.redirect('http://localhost:3001/allowRequests')
-  //res.send('GET localhost:3001/CreateUserDirectory')
   await res.render('login.ejs');
-  
 });
 
 app.get('/style.css', async (req, res) => {
@@ -103,16 +100,7 @@ async function GetUserImages(p_userDirectoty, res) {
       files.forEach(file => console.log(file))
       if (files != undefined) {
         resolve(files);
-        /*
-        ImageInfo = [{
-          name: files[0], url: currentUser +'/'+ files[0],
-        }, {
-          name: files[1], url: currentUser +'/'+ files[1],
-        }, {
-          name: files[2], url: currentUser +'/'+ files[2],
-        }];
-        */
-      
+
         res.render('accountmain.ejs', { userName: currentUser, Image: files, ImageSource: '/getimages', ImageName: files[0]});
         file = files;
       }
@@ -172,6 +160,7 @@ async function UserSignIn(res, user, password) {
       res.send("Incorrect username or password");
       console.log("Username doesn't exist")
     }
+
     // username exists, checking password
     else {
       var dataRecieved = result[0];
@@ -227,33 +216,58 @@ async function UserValidation(res, user, password, confirm_password) {
 
 async function CreateUserAccount(user, password) {
   plaintextPassword = password;
-  var userdirectory = __dirname + "/UserFolders/" + user;
-
-  //Hashing passowrd
-  bcrypt.genSalt(10, async (err, salt) => {
-    bcrypt.hash(plaintextPassword, salt, async function (err, hash) {
-      //Create JSON object with details to add user to database
-      const userDetails = { username: user, password: hash, userdirectory }
-
-      //Insert new user details into SQL database
-      connection.query('INSERT INTO user SET ?', userDetails, async function (err, result) {
-        if (err) throw err;
-        console.log("user added:", user)
-      })
-    });
+  createUserDirectory = JSON.stringify({
+    'user': user
   });
 
-  //Create directory where user files stored
-  try {
-    if (!fs.existsSync(userdirectory)) {
-      fs.mkdirSync(userdirectory);
-      console.log("Created user folder:", user)
+  options = {
+    hostname: 'localhost',
+    port: 3001,
+    path: '/CreateUserDirectory',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(createUserDirectory)
     }
-  } catch (err) {
-    console.error(err);
   }
-}
 
+  createNewDirectory = http.request(options, async (res) => {   
+    res.setEncoding('utf8');
+    res.on('data', (chunk) => {
+      userDirectoryFromServer += chunk;
+    });
+    
+    // Ending the response 
+    res.on('end', () => {
+        createNewDirectory.write(createUserDirectory)
+        createNewDirectory.end()
+        console.log('Body:', JSON.parse(userDirectoryFromServer))
+
+        let directory = JSON.parse(userDirectoryFromServer)
+        //Hashing passowrd
+        bcrypt.genSalt(10, async (err, salt) => {
+        bcrypt.hash(plaintextPassword, salt, async function (err, hash) {
+        //Create JSON object with details to add user to database
+        const userDetails = { username: user, password: hash, userDirectory: directory.CreatedDirectory}
+
+        //Insert new user details into SQL database
+        connection.query('INSERT INTO user SET ?', userDetails, async function (err, result) {
+        if (err) throw err;
+          console.log("user added:", user)
+        })
+        });
+    });
+    });
+       
+  }).on("error", (err) => {
+    console.log("Error: ", err)
+  }).end(createUserDirectory)
+
+  await createNewDirectory;
+
+  //var userdirectory = __dirname + "/UserFolders/" + user;
+  
+}
 /*
 const http = require('http')
 
@@ -316,18 +330,4 @@ app.post('/check', function(req,res){
 console.log(req.body);
 res.send('OK')
 })
-*/
-
-/*
-  fs.readFile(__dirname + "/login.html")
-  .then(contents => {
-      res.setHeader("Content-Type", "text/html");
-      res.writeHead(200);
-      res.end(contents);
-  })
-  .catch(err => {
-      res.writeHead(500);
-      res.end(err);
-      return;
-  });
 */
