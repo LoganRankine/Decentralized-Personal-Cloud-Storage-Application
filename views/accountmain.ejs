@@ -8,9 +8,10 @@
         <div class="top_navbar">
             <a><%= userName %></a>
 
-            <form action="fileupload" method="post" enctype="multipart/form-data">
+            <form action="http://localhost:3001/upload" method="post" enctype="multipart/form-data">
                 <input for="fileupload" src="homepage\ImageAssets/add_button.png" type="file" name="filetoupload">
                 <input type="submit">
+                <input hidden="hidden" name="username" id="username" value="<%= userName %>" />
             </form>
         </div class="gallery_grid">
         <% if (Image != undefined ) { %>

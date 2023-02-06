@@ -7,8 +7,6 @@ var http = require('http');
 const session = require('express-session');
 const { body, validationResult } = require('express-validator');
 
-
-
 const app = express();
 
 app.set('viewengine', 'ejs');
@@ -39,11 +37,15 @@ connection.connect(function (err) {
 
 //options to send request to storage server
 let options;
+let getDirOptions;
 
 //Sends request to server to create new directory when a user is created
 let createNewDirectory 
+let sendUsername
+let reqDir
 
 app.post('/accountmain-page/fileupload', async (req, res) => {
+    /*
   var form = new formidable.IncomingForm();
   form.parse(req, function (err, fields, files) {
     var oldpath = files.filetoupload.filepath;
@@ -54,12 +56,15 @@ app.post('/accountmain-page/fileupload', async (req, res) => {
       res.end();
     });
   });
+  */
 });
 
+/*
 app.get('/accountmain-page/Image_1.JPG', async (req, res) => {
   var content = __dirname + '/homepage/accountmain-page/Image_2.JPG';
   await res.sendFile(__dirname + '/homepage/accountmain-page/Image_1.JPG');
 });
+*/
 
 app.get('/', async (req, res) => {
   await res.render('login.ejs');
@@ -86,31 +91,96 @@ app.get('/accountmain-page/accountmain.html', async (req, res) => {
     res.redirect('http://localhost:3000/');
   }
   else {
-    GetUserImages(user_directoty, res);
+    GetUserImages(currentUser, res);
   }
 
 });
 
 var file;
 
-async function GetUserImages(p_userDirectoty, res) {
-  let myPromise = new Promise(function (resolve) {
-    fs.readdir(p_userDirectoty, (error, files) => {
-      if (error) console.log(error)
-      files.forEach(file => console.log(file))
-      if (files != undefined) {
-        resolve(files);
+//Gets all the locations of files stored on file storage
+async function GetUserImages(p_userDirectoty, result) {
 
-        res.render('accountmain.ejs', { userName: currentUser, Image: files, ImageSource: '/getimages', ImageName: files[0]});
-        file = files;
+  sendUsername = JSON.stringify({
+    'user': p_userDirectoty
+  });
+
+  getDirOptions = {
+    hostname: 'localhost',
+    path: '/getUserDirectory',
+    port: 3001,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(sendUsername)
+    }
+    
+};
+    
+// Sending the request
+reqDir = http.request(getDirOptions, (res) => {
+    let data = ''
+     
+    res.on('data', (chunk) => {
+        data += chunk;
+    });
+    
+    // Ending the response 
+    res.on('end', () => {
+      reqDir.end()
+      console.log('Body:', JSON.parse(data))
+      parsedData = JSON.parse(data)
+      if(parsedData != undefined){
+        result.render('accountmain.ejs', { userName: currentUser, Image: parsedData.userDir, ImageSource: '/getimages', ImageName: parsedData.userDir[0]});
       }
       else{
-        //there is no files
-        res.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
+        result.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
       }
-    })
+    });
+       
+  }).on("error", (err) => {
+    console.log("Error: ", err)
+  }).end(sendUsername)
+
+  /*
+  let userdirectoryReqOptions
+  let requestUserDirectory
+  let userDirectory;
+
+  let sendUsername = JSON.stringify({
+    'user': p_userDirectoty
   });
-  file = await myPromise.then();
+
+  userdirectoryReqOptions = {
+    hostname: 'localhost',
+    port: 3001,
+    path: '/getUserDirectory',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(sendUsername)
+    }
+  }
+
+  requestUserDirectory = new http.request(userdirectoryReqOptions, async (res) => {   
+    res.setEncoding('utf8')
+    
+    res.on('data', (chunk) => {
+      chunk += userDirectory
+    });
+    res.on('end', () => {
+      requestUserDirectory.write(sendUsername)
+      requestUserDirectory.end()
+      userDirectory = JSON.parse(userDirectory)
+      console.log('No more data in response.');
+    });
+    });
+    res.on('error', (e) => {
+      console.error(`problem with request: ${e.message}`);
+    }).end(sendUsername);
+
+  //userDirectory = JSON.parse(userDirectory)
+  */
 }
 
 app.get('/getimages', async (req, res) => {
@@ -144,6 +214,7 @@ app.all('*', function (req, res) {
   else{
     res.send("404 not found")
   }
+  
 });
 
 app.listen(3000, (req,res) => {
@@ -170,7 +241,9 @@ async function UserSignIn(res, user, password) {
 
         //Takes user to account and sets their directory
         res.redirect('http://localhost:3000/accountmain-page/accountmain.html');
+
         user_directoty = dataRecieved.userDirectory;
+
         currentUser = user;
         console.log('User signed in:', user);
       }
@@ -264,9 +337,6 @@ async function CreateUserAccount(user, password) {
   }).end(createUserDirectory)
 
   await createNewDirectory;
-
-  //var userdirectory = __dirname + "/UserFolders/" + user;
-  
 }
 /*
 const http = require('http')
