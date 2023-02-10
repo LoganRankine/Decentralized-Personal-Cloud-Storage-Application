@@ -6,18 +6,21 @@
     <body class="background">
 
         <div class="top_navbar">
-            <a><%= userName %></a>
+            <a id="username"><%= userName %></a>
+            <a id="logout" href="http://<%= webserver_location %>">Log out</a>
 
-            <form action="http://localhost:3001/upload" method="post" enctype="multipart/form-data">
-                <input for="fileupload" src="homepage\ImageAssets/add_button.png" type="file" name="filetoupload">
-                <input type="submit">
+            <form action="http://<%= server_location %>upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="filetoupload" id="upload" hidden="hidden">
+                <label class= "upload-button" for="upload">Choose file</label>
+                <input type="submit" id="submit" hidden>
+                <label for="submit" class="upload-button">Upload</label>
                 <input hidden="hidden" name="username" id="username" value="<%= userName %>" />
             </form>
         </div class="gallery_grid">
         <% if (Image != undefined ) { %>
             <% Image.forEach(image => { %>
-                <a>
-                    <img width="200" height="200" src="http://localhost:3001/<%= userName %>/<%= image %>">
+                <a target="_blank" href="http://<%= server_location %><%= userName %>/<%= image %>" download="picture.jpg">
+                    <img width="200" height="200" src="http://<%= server_location %><%= userName %>/<%= image %>">
                     <label><%= image %></label>
                 </a>
             <% }); %>

@@ -1,11 +1,7 @@
 const express = require('express');
 const bcrypt = require("bcrypt");
-let formidable = require('formidable');
-let waitOn = require('wait-on');
-let fs = require('fs');
-var http = require('http');
-const session = require('express-session');
-const { body, validationResult } = require('express-validator');
+const fs = require('fs');
+const http = require('http');
 
 const app = express();
 
@@ -14,12 +10,14 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-var mysql = require('mysql');
+const FileServerIP = 'localhost'
+const FileServerPort = 3001
+const IPaddress = 'localhost'
+const PortNummber = 3000
 
-let user_directoty;
+const mysql = require('mysql');
+
 let currentUser;
-let createUserDirectory
-let userDirectoryFromServer = ''
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
@@ -37,34 +35,9 @@ connection.connect(function (err) {
 
 //options to send request to storage server
 let options;
-let getDirOptions;
 
 //Sends request to server to create new directory when a user is created
 let createNewDirectory 
-let sendUsername
-let reqDir
-
-app.post('/accountmain-page/fileupload', async (req, res) => {
-    /*
-  var form = new formidable.IncomingForm();
-  form.parse(req, function (err, fields, files) {
-    var oldpath = files.filetoupload.filepath;
-    var newpath = user_directoty + "/" + files.filetoupload.originalFilename;
-    fs.rename(oldpath, newpath, function (err) {
-      if (err) throw err;
-      res.write('File uploaded and moved!');
-      res.end();
-    });
-  });
-  */
-});
-
-/*
-app.get('/accountmain-page/Image_1.JPG', async (req, res) => {
-  var content = __dirname + '/homepage/accountmain-page/Image_2.JPG';
-  await res.sendFile(__dirname + '/homepage/accountmain-page/Image_1.JPG');
-});
-*/
 
 app.get('/', async (req, res) => {
   await res.render('login.ejs');
@@ -83,109 +56,15 @@ app.get('/createaccount-page/createpage-style.css', async (req, res) => {
 });
 
 app.get('/accountmain-page/accountmain.html', async (req, res) => {
-  
-  //await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain.html');
-  
+
   if (currentUser == null) {
     res.send("Session expired");
-    res.redirect('http://localhost:3000/');
+    res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
   }
   else {
     GetUserImages(currentUser, res);
   }
 
-});
-
-var file;
-
-//Gets all the locations of files stored on file storage
-async function GetUserImages(p_userDirectoty, result) {
-
-  sendUsername = JSON.stringify({
-    'user': p_userDirectoty
-  });
-
-  getDirOptions = {
-    hostname: 'localhost',
-    path: '/getUserDirectory',
-    port: 3001,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(sendUsername)
-    }
-    
-};
-    
-// Sending the request
-reqDir = http.request(getDirOptions, (res) => {
-    let data = ''
-     
-    res.on('data', (chunk) => {
-        data += chunk;
-    });
-    
-    // Ending the response 
-    res.on('end', () => {
-      reqDir.end()
-      console.log('Body:', JSON.parse(data))
-      parsedData = JSON.parse(data)
-      if(parsedData != undefined){
-        result.render('accountmain.ejs', { userName: currentUser, Image: parsedData.userDir, ImageSource: '/getimages', ImageName: parsedData.userDir[0]});
-      }
-      else{
-        result.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
-      }
-    });
-       
-  }).on("error", (err) => {
-    console.log("Error: ", err)
-  }).end(sendUsername)
-
-  /*
-  let userdirectoryReqOptions
-  let requestUserDirectory
-  let userDirectory;
-
-  let sendUsername = JSON.stringify({
-    'user': p_userDirectoty
-  });
-
-  userdirectoryReqOptions = {
-    hostname: 'localhost',
-    port: 3001,
-    path: '/getUserDirectory',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(sendUsername)
-    }
-  }
-
-  requestUserDirectory = new http.request(userdirectoryReqOptions, async (res) => {   
-    res.setEncoding('utf8')
-    
-    res.on('data', (chunk) => {
-      chunk += userDirectory
-    });
-    res.on('end', () => {
-      requestUserDirectory.write(sendUsername)
-      requestUserDirectory.end()
-      userDirectory = JSON.parse(userDirectory)
-      console.log('No more data in response.');
-    });
-    });
-    res.on('error', (e) => {
-      console.error(`problem with request: ${e.message}`);
-    }).end(sendUsername);
-
-  //userDirectory = JSON.parse(userDirectory)
-  */
-}
-
-app.get('/getimages', async (req, res) => {
-  res.sendFile(user_directoty +'/'+ file[1]);
-  console.log('Images sent', file[1])
 });
 
 app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
@@ -195,6 +74,11 @@ app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
 app.get('/accountmain-page/accountmain-script.js', async (req, res) => {
   await res.send(__dirname + '/homepage/accountmain-page/accountmain-script.js');
 });
+
+app.get('/Logout', async(req,res)=>{
+  currentUser = null;
+  res.redirect("http://" + IPaddress + ':' + PortNummber + '/')
+})
 
 app.post('/createAccount', async (req, res) => {
   console.log(req.body);
@@ -207,19 +91,66 @@ app.post('/signIn', async (req, res) => {
 });
 
 app.all('*', function (req, res) {
-  if(req.url.toString().includes(currentUser)){
-    var remove = user_directoty + req.url.toString().replace('accountmain-page/'+currentUser+'/' ,'/');
-    res.sendFile(remove);
-  }
-  else{
-    res.send("404 not found")
-  }
-  
+  res.send("404 not found")
 });
 
 app.listen(3000, (req,res) => {
   console.log('Our express server is up on port 3000');
 });
+
+//Gets all the locations of files stored on file storage
+async function GetUserImages(currentUser, result) {
+
+  //Puts username into a json object to be sent
+  let sendUsername = JSON.stringify({
+    'user': currentUser
+  });
+
+  let getDirOptions = {
+    hostname: FileServerIP,
+    path: '/getUserDirectory',
+    port: FileServerPort,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(sendUsername)
+    }
+    
+};
+    
+//Requests from storage server all files stored in a users folder
+let reqDir = http.request(getDirOptions, (res) => {
+    let userDirInfo = ''
+     
+    //Gets the chunked data recieved from storage server
+    res.on('data', (chunk) => {
+      userDirInfo += chunk;
+    });
+    
+    //Ending the response 
+    res.on('end', () => {
+      //Ends the stream of data once it reaches an end
+      reqDir.end()
+
+      //JSON parse the data recieved so it can be read
+      console.log('Body:', JSON.parse(userDirInfo))
+      parsedData = JSON.parse(userDirInfo)
+
+      //Checks whether there is data that has been sent
+      if(parsedData != undefined){
+        //Render the webpage and gives users directory info
+        result.render('accountmain.ejs', { userName: currentUser, Image: parsedData.userDir, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
+      }
+      else{
+        result.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
+      }
+    });
+  }).on("error", (err) => {
+    console.log("Error: ", err)
+    //Sends username to storage server to be used to get the correct users directory information
+  }).end(sendUsername)
+
+  }
 
 async function UserSignIn(res, user, password) {
   //check if user exists
@@ -240,7 +171,7 @@ async function UserSignIn(res, user, password) {
       if (await comparePassword(password, dataRecieved.password) == true) {
 
         //Takes user to account and sets their directory
-        res.redirect('http://localhost:3000/accountmain-page/accountmain.html');
+        res.redirect('http://' + IPaddress +':' + PortNummber+'/accountmain-page/accountmain.html');
 
         user_directoty = dataRecieved.userDirectory;
 
@@ -262,6 +193,8 @@ async function comparePassword(password, hash) {
 
 async function UserValidation(res, user, password, confirm_password) {
   var passwordMatch = false;
+
+  //Check if passwords match
   if (password != confirm_password) {
     console.log("passwords don't match")
     res.send("Passowrds don't match, redirecting...")
@@ -269,15 +202,16 @@ async function UserValidation(res, user, password, confirm_password) {
   else {
     passwordMatch = true;
     console.log('password matches')
-
   }
   //check if user exists already
   if (passwordMatch == true) {
     connection.query("SELECT * FROM user WHERE username=" + "'" + user + "'", async function (err, result, fields) {
       if (err) throw err;
+
       if (result.length == 0) {
+        console.log(user, "doesn't exist, creating profile")
         CreateUserAccount(user, password)
-        res.redirect('http://localhost:3000/');
+        res.redirect('http://' + IPaddress +':' + PortNummber+ '/');
       }
       else {
         console.log("user already exists:", user)
@@ -287,15 +221,20 @@ async function UserValidation(res, user, password, confirm_password) {
   }
 }
 
+//Create user account
 async function CreateUserAccount(user, password) {
   plaintextPassword = password;
-  createUserDirectory = JSON.stringify({
+
+  //Turns username into a JOSN object 
+  let createUserDirectory = JSON.stringify({
     'user': user
   });
 
-  options = {
-    hostname: 'localhost',
-    port: 3001,
+  // options to send to storage server and puts username in header so server knows what to 
+  //call the new directory
+  let options = {
+    hostname: FileServerIP,
+    port: FileServerPort,
     path: '/CreateUserDirectory',
     method: 'POST',
     headers: {
@@ -304,18 +243,23 @@ async function CreateUserAccount(user, password) {
     }
   }
 
-  createNewDirectory = http.request(options, async (res) => {   
+  //Sends request to storage server 
+  let createNewDirectory = http.request(options, async (res) => {  
+    let userDirectoryFromServer = '' 
     res.setEncoding('utf8');
     res.on('data', (chunk) => {
+      //Puts chunked data recieved into a variable
       userDirectoryFromServer += chunk;
     });
     
     // Ending the response 
     res.on('end', () => {
+        //Ends stream to server
         createNewDirectory.write(createUserDirectory)
         createNewDirectory.end()
-        console.log('Body:', JSON.parse(userDirectoryFromServer))
 
+        //Parses data recieved from server
+        console.log('Body:', JSON.parse(userDirectoryFromServer))
         let directory = JSON.parse(userDirectoryFromServer)
         //Hashing passowrd
         bcrypt.genSalt(10, async (err, salt) => {
