@@ -12,6 +12,47 @@ body{
     text-align: center;
 }
 
+.showFiles{
+    display: block;
+    background-color: white;
+    margin-right: 20rem;
+    margin-top: 1rem;
+    margin-left: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+a:link{
+    text-decoration: none;
+}
+
+.previewImage{
+    height: 3rem;
+    width: 3rem;
+}
+
+.fileType{
+    color: rgb(173, 171, 171);
+    margin-right: 3rem;
+    float: right;
+    text-transform: lowercase;
+    text-align: center;
+}
+
+.column {
+    display: block;
+    width: auto;
+    height: 3rem;
+    border-color: rgb(121, 120, 120);
+    border-style:solid;
+}
+
+.imageName{
+    margin-left: 3rem;
+    font-family: sans-serif;
+    color: black;
+    font-size: 17px;
+}
+
 #username{
     background-color: indigo;
     color: white;
@@ -19,7 +60,7 @@ body{
     font-family: sans-serif;
     border-radius: 0.3rem;
     margin-right: 1rem;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 #logout{
     background-color: indigo;
@@ -27,10 +68,18 @@ body{
     padding: 0.5rem;
     font-family: sans-serif;
     border-radius: 0.3rem;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     margin-left: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     margin-right: 1rem;
+}
+
+img{
+    display: inline;
+}
+
+a{
+    cursor: pointer;
 }
 
 .upload-button{
@@ -41,9 +90,9 @@ body{
     font-family: sans-serif;
     border-radius: 0.3rem;
     cursor: pointer;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     margin-left: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .top_navbar input{
@@ -70,42 +119,6 @@ body{
     border-radius: 10px;
     white-space: nowrap;
 }
-/*
-.image_button{
-    -ms-grid-row-align: center;
-    -ms-grid-column-align: center;
 
-    display: grid;
-    width: 9rem;
-    height: 10rem;
 
-    border-radius: 5px;
-    box-shadow: 1px 1px 1px 1px gray;
-    background-color: white;
 
-    padding-left: 1mm;
-    padding-right: 1mm;
-    padding-bottom: 1mm;
-    padding-top: 1mm;
-    margin-inline: auto;
-}
-*/
-
-.gallery{
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 5vw);
-}
-
-.gallery_grid {
-
-    display: grid;
-
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 5vw);
-
-    grid-gap: 15px;
-    border-radius: 5px;
-    box-shadow: 1px 1px 1px 1px gray;
-    background-color: white;
-}

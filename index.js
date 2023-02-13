@@ -3,6 +3,11 @@ const bcrypt = require("bcrypt");
 const fs = require('fs');
 const http = require('http');
 
+/*
+const example_class = require('./example_class')
+const temp = new example_class()
+*/
+
 const app = express();
 
 app.set('viewengine', 'ejs');
@@ -10,9 +15,9 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = 'localhost'
+const FileServerIP = '10.125.25.146'
 const FileServerPort = 3001
-const IPaddress = 'localhost'
+const IPaddress = '10.125.25.146'
 const PortNummber = 3000
 
 const mysql = require('mysql');
@@ -38,6 +43,32 @@ let options;
 
 //Sends request to server to create new directory when a user is created
 let createNewDirectory 
+
+//adds the date the file was uploaded
+app.post('/dateUploaded',async (req,res)=>{
+  const r_username = req.body.user
+  const r_filename = req.body.filename
+  const r_dateuploaded = req.body.dateuploaded
+
+  //Get the users ID from database
+  connection.query("SELECT * FROM user WHERE username=" + "'" + r_username + "'", async function (err, userID) {
+    if (err) throw err;
+    
+      //Once UserID recieved. Add UserID to FileID Table, file id is auto incremented
+      const addTofileID = { UserID: userID[0].iduser}
+      connection.query('INSERT INTO fileid SET ?', addTofileID, async(err,fileID)=>{
+      if (err) throw err;
+      const addTofileInfo = { FileID: fileID.insertId ,filename: r_filename, dateuploaded: r_dateuploaded}
+
+      //Once UserID added to FileID. Use the FileID recieved to add fileID and info to 
+      //fileinformation table
+      connection.query('INSERT INTO fileinformation SET ?', addTofileInfo, async(err,result)=>{
+        if (err) throw err;
+        console.log('File information added: ', 'Filename:',r_filename,', Date Uploaded:',r_dateuploaded)
+      })
+    })
+  })
+})
 
 app.get('/', async (req, res) => {
   await res.render('login.ejs');
@@ -116,7 +147,7 @@ async function GetUserImages(currentUser, result) {
       'Content-Length': Buffer.byteLength(sendUsername)
     }
     
-};
+}
     
 //Requests from storage server all files stored in a users folder
 let reqDir = http.request(getDirOptions, (res) => {
@@ -136,10 +167,12 @@ let reqDir = http.request(getDirOptions, (res) => {
       console.log('Body:', JSON.parse(userDirInfo))
       parsedData = JSON.parse(userDirInfo)
 
+      //Get the filename and datetime
+
       //Checks whether there is data that has been sent
       if(parsedData != undefined){
-        //Render the webpage and gives users directory info
         result.render('accountmain.ejs', { userName: currentUser, Image: parsedData.userDir, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
+        
       }
       else{
         result.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
@@ -150,6 +183,21 @@ let reqDir = http.request(getDirOptions, (res) => {
     //Sends username to storage server to be used to get the correct users directory information
   }).end(sendUsername)
 
+  }
+
+  async function getDates(userID){
+    let sql = "SELECT * FROM fileid WHERE UserID= " + userID
+    let allResults = '';
+      connection.query(sql, async function(err,result){
+        if (err) throw err;
+        for(let i = 0;i < result.length;i++){
+          let newQuery = "SELECT * FROM fileinformation WHERE FileID= " + result[i].FileID
+          connection.query(newQuery, async function(err,results){
+            if (err) throw err;
+            allResults += results[0].dateuploaded + ','
+          })
+        }
+      })
   }
 
 async function UserSignIn(res, user, password) {
@@ -174,6 +222,7 @@ async function UserSignIn(res, user, password) {
         res.redirect('http://' + IPaddress +':' + PortNummber+'/accountmain-page/accountmain.html');
 
         user_directoty = dataRecieved.userDirectory;
+        getDates(dataRecieved.iduser)
 
         currentUser = user;
         console.log('User signed in:', user);
