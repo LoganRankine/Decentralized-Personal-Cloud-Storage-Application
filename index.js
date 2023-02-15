@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require("bcrypt");
 const fs = require('fs');
 const http = require('http');
+const cookieParser = require('cookie-parser');
 
 /*
 const example_class = require('./example_class')
@@ -10,14 +11,15 @@ const temp = new example_class()
 
 const app = express();
 
+app.use(cookieParser());
 app.set('viewengine', 'ejs');
 app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = 'localhost'
+const FileServerIP = '10.0.0.15'
 const FileServerPort = 3001
-const IPaddress = 'localhost'
+const IPaddress = '10.0.0.15'
 const PortNummber = 3000
 
 const mysql = require('mysql');
@@ -40,18 +42,12 @@ connection.connect(function (err) {
   console.log("connected");
 });
 
-//options to send request to storage server
-let options;
-
-//Sends request to server to create new directory when a user is created
-let createNewDirectory 
-
 //adds the date the file was uploaded
 app.post('/dateUploaded',async (req,res)=>{
   const r_username = req.body.user
   const r_filename = req.body.filename
   const r_dateuploaded = req.body.dateuploaded
-  let r_fileType = req.body.filename.split('.')[1]
+  let r_fileType = req.body.filename.slice(-3)
 
   //Get the users ID from database
   connection.query("SELECT * FROM user WHERE username=" + "'" + r_username + "'", async function (err, userID) {
@@ -91,14 +87,17 @@ app.get('/createaccount-page/createpage-style.css', async (req, res) => {
 
 app.get('/accountmain-page/accountmain.html', async (req, res) => {
 
-  if (currentUser == null) {
+  console.log(req.cookies) 
+
+  if(req.cookies.userID == null){
     res.send("Session expired");
     res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
   }
-  else {
-    GetUserImages(currentUserID, res);
+  else{
+    GetUserImages(req.cookies.userID, res, req);
   }
 
+  
 });
 
 app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
@@ -128,12 +127,12 @@ app.all('*', function (req, res) {
   res.send("404 not found")
 });
 
-app.listen(3000, (req,res) => {
+app.listen(PortNummber, (req,res) => {
   console.log('Our express server is up on port 3000');
 });
 
 //Gets all the locations of files stored on file storage
-async function GetUserImages(p_userID, res) {
+async function GetUserImages(p_userID, res, req) {
 
   let sql = "SELECT fileinformation.filename, fileinformation.dateuploaded, fileinformation.filetype FROM fileid JOIN user on fileid.UserID=user.iduser JOIN fileinformation on fileid.FileID=fileinformation.FileID WHERE FileID.UserID=" + p_userID
   connection.query(sql, async function(err,result){
@@ -142,11 +141,10 @@ async function GetUserImages(p_userID, res) {
     parsedData = result
     //Checks whether there is data that has been sent
     if(parsedData != undefined){
-      res.render('accountmain.ejs', { userName: currentUser, Image: parsedData, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
-      
+      res.render('accountmain.ejs', { userName: req.cookies.userName, Image: parsedData, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
     }
     else{
-      res.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
+      res.render('accountmain.ejs', { userName: req.cookies.userName, ImageSource: undefined});
     }
 
     
@@ -177,6 +175,13 @@ async function UserSignIn(res, user, password) {
       if (await comparePassword(password, dataRecieved.password) == true) {
 
         //Takes user to account and sets their directory
+        let options = {
+          maxAge: 1000 * 60 * 15, // would expire after 15 minutes
+          httpOnly: true, // The cookie only accessible by the web server
+        }
+        //set cookie
+        res.cookie('userID', dataRecieved.iduser, options)
+        res.cookie('userName', dataRecieved.username,options)
         res.redirect('http://' + IPaddress +':' + PortNummber+'/accountmain-page/accountmain.html');
 
         user_directoty = dataRecieved.userDirectory;

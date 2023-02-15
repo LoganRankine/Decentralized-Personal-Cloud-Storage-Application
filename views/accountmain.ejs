@@ -19,14 +19,21 @@
         </div>
         
         <div class="showFiles">
+            <a class="columnHeader">
+                <label class="imageName-header">Filename</label>
+                <label class="fileType-header">File Type</label>
+                <label class="dateuploaded-header">Date Uploaded</label>
+                
+            </a>
 
         <% if (Image != undefined ) { %>
             <% Image.forEach(image => { %>
                 <a href="http://<%= server_location %><%= userName %>/<%= image.filename %>" class="column">
                     <!--<img class="previewImage" src="http://<%= server_location %><%= userName %>/<%= image %>">-->
                     <label class="imageName"><%= image.filename %></label>
-                    <label class="dateuploaded"><%= image.dateuploaded %></label>
                     <label class="fileType"><%= image.filetype %></label>
+                    <label class="dateuploaded"><%= image.dateuploaded %></label>
+                    
                 </a>
             <% }); %>
         <% }%>

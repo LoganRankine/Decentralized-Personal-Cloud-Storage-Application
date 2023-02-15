@@ -30,22 +30,38 @@ a:link{
     width: 3rem;
 }
 
-.dateuploaded{
-    color: rgb(173, 171, 171);
-    margin-right: 1rem;
-    float: right;
-    text-transform: lowercase;
-    text-align: center;
-}
-
 .fileType{
     color: rgb(173, 171, 171);
-    margin-right: 3rem;
+    margin-right: 2.5rem;
     float: right;
     text-transform: lowercase;
     text-align: center;
 }
 
+.fileType-header{
+    color: rgb(0, 0, 0);
+    margin-right: 1rem;
+    float: right;
+    text-align: center;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
+.dateuploaded{
+    color: rgb(173, 171, 171);
+    float: right;
+    margin-right: 4.8rem;
+    text-transform: lowercase;
+    text-align: center;
+}
+
+.dateuploaded-header{
+    color: rgb(0, 0, 0);
+    margin-right: 4rem;
+    float: right;
+    font-weight: bold;
+    font-family: sans-serif;
+}
 
 .column {
     display: block;
@@ -53,6 +69,23 @@ a:link{
     height: 3rem;
     border-color: rgb(121, 120, 120);
     border-style:solid;
+}
+
+.columnHeader{
+    display: block;
+    width: auto;
+    height: 2rem;
+    border-color: rgb(0, 0, 0);
+    border-style:solid;
+}
+
+.imageName-header{
+    margin-left: 3rem;
+    font-family: sans-serif;
+    color: black;
+    font-size: 17px;
+    font-weight:bold;
+    font-family: sans-serif;
 }
 
 .imageName{
