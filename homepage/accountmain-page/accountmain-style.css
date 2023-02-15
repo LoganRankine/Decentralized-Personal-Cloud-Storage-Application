@@ -30,6 +30,14 @@ a:link{
     width: 3rem;
 }
 
+.dateuploaded{
+    color: rgb(173, 171, 171);
+    margin-right: 1rem;
+    float: right;
+    text-transform: lowercase;
+    text-align: center;
+}
+
 .fileType{
     color: rgb(173, 171, 171);
     margin-right: 3rem;
@@ -37,6 +45,7 @@ a:link{
     text-transform: lowercase;
     text-align: center;
 }
+
 
 .column {
     display: block;

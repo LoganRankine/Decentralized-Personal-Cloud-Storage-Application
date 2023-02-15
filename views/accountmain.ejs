@@ -17,24 +17,16 @@
                 <input hidden="hidden" name="username" id="username" value="<%= userName %>" />
             </form>
         </div>
-        <!--
-        <% if (Image != undefined ) { %>
-            <% Image.forEach(image => { %>
-                <a target="_blank" href="http://<%= server_location %><%= userName %>/<%= image %>" download="picture.jpg">
-                    <img width="200" height="200" src="http://<%= server_location %><%= userName %>/<%= image %>">
-                    <label><%= image %></label>
-                </a>
-            <% }); %>
-        <% }%>
-        -->
+        
         <div class="showFiles">
 
         <% if (Image != undefined ) { %>
             <% Image.forEach(image => { %>
-                <a href="http://<%= server_location %><%= userName %>/<%= image %>" class="column">
+                <a href="http://<%= server_location %><%= userName %>/<%= image.filename %>" class="column">
                     <!--<img class="previewImage" src="http://<%= server_location %><%= userName %>/<%= image %>">-->
-                    <label class="imageName"><%= image %></label>
-                    <label class="fileType"><%= image.split('.')[1] %></label>
+                    <label class="imageName"><%= image.filename %></label>
+                    <label class="dateuploaded"><%= image.dateuploaded %></label>
+                    <label class="fileType"><%= image.filetype %></label>
                 </a>
             <% }); %>
         <% }%>

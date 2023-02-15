@@ -15,21 +15,23 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = '10.125.25.146'
+const FileServerIP = 'localhost'
 const FileServerPort = 3001
-const IPaddress = '10.125.25.146'
+const IPaddress = 'localhost'
 const PortNummber = 3000
 
 const mysql = require('mysql');
 
 let currentUser;
+let currentUserID;
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
   host: "127.0.0.1",
   user: "root",
   password: "password",
-  database: "userprofile"
+  database: "userprofile",
+  multipleStatements: true
 });
 
 //Connect to MySQL database
@@ -49,6 +51,7 @@ app.post('/dateUploaded',async (req,res)=>{
   const r_username = req.body.user
   const r_filename = req.body.filename
   const r_dateuploaded = req.body.dateuploaded
+  let r_fileType = req.body.filename.split('.')[1]
 
   //Get the users ID from database
   connection.query("SELECT * FROM user WHERE username=" + "'" + r_username + "'", async function (err, userID) {
@@ -58,7 +61,7 @@ app.post('/dateUploaded',async (req,res)=>{
       const addTofileID = { UserID: userID[0].iduser}
       connection.query('INSERT INTO fileid SET ?', addTofileID, async(err,fileID)=>{
       if (err) throw err;
-      const addTofileInfo = { FileID: fileID.insertId ,filename: r_filename, dateuploaded: r_dateuploaded}
+      const addTofileInfo = { FileID: fileID.insertId ,filename: r_filename, dateuploaded: r_dateuploaded, filetype: r_fileType}
 
       //Once UserID added to FileID. Use the FileID recieved to add fileID and info to 
       //fileinformation table
@@ -93,7 +96,7 @@ app.get('/accountmain-page/accountmain.html', async (req, res) => {
     res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
   }
   else {
-    GetUserImages(currentUser, res);
+    GetUserImages(currentUserID, res);
   }
 
 });
@@ -130,74 +133,29 @@ app.listen(3000, (req,res) => {
 });
 
 //Gets all the locations of files stored on file storage
-async function GetUserImages(currentUser, result) {
+async function GetUserImages(p_userID, res) {
 
-  //Puts username into a json object to be sent
-  let sendUsername = JSON.stringify({
-    'user': currentUser
-  });
+  let sql = "SELECT fileinformation.filename, fileinformation.dateuploaded, fileinformation.filetype FROM fileid JOIN user on fileid.UserID=user.iduser JOIN fileinformation on fileid.FileID=fileinformation.FileID WHERE FileID.UserID=" + p_userID
+  connection.query(sql, async function(err,result){
+    if(err) throw err;
 
-  let getDirOptions = {
-    hostname: FileServerIP,
-    path: '/getUserDirectory',
-    port: FileServerPort,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(sendUsername)
+    parsedData = result
+    //Checks whether there is data that has been sent
+    if(parsedData != undefined){
+      res.render('accountmain.ejs', { userName: currentUser, Image: parsedData, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
+      
     }
-    
-}
-    
-//Requests from storage server all files stored in a users folder
-let reqDir = http.request(getDirOptions, (res) => {
-    let userDirInfo = ''
-     
-    //Gets the chunked data recieved from storage server
-    res.on('data', (chunk) => {
-      userDirInfo += chunk;
-    });
-    
-    //Ending the response 
-    res.on('end', () => {
-      //Ends the stream of data once it reaches an end
-      reqDir.end()
+    else{
+      res.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
+    }
 
-      //JSON parse the data recieved so it can be read
-      console.log('Body:', JSON.parse(userDirInfo))
-      parsedData = JSON.parse(userDirInfo)
-
-      //Get the filename and datetime
-
-      //Checks whether there is data that has been sent
-      if(parsedData != undefined){
-        result.render('accountmain.ejs', { userName: currentUser, Image: parsedData.userDir, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
-        
-      }
-      else{
-        result.render('accountmain.ejs', { userName: currentUser, ImageSource: undefined});
-      }
-    });
-  }).on("error", (err) => {
-    console.log("Error: ", err)
-    //Sends username to storage server to be used to get the correct users directory information
-  }).end(sendUsername)
+    
+  })
 
   }
 
   async function getDates(userID){
-    let sql = "SELECT * FROM fileid WHERE UserID= " + userID
-    let allResults = '';
-      connection.query(sql, async function(err,result){
-        if (err) throw err;
-        for(let i = 0;i < result.length;i++){
-          let newQuery = "SELECT * FROM fileinformation WHERE FileID= " + result[i].FileID
-          connection.query(newQuery, async function(err,results){
-            if (err) throw err;
-            allResults += results[0].dateuploaded + ','
-          })
-        }
-      })
+    
   }
 
 async function UserSignIn(res, user, password) {
@@ -222,7 +180,8 @@ async function UserSignIn(res, user, password) {
         res.redirect('http://' + IPaddress +':' + PortNummber+'/accountmain-page/accountmain.html');
 
         user_directoty = dataRecieved.userDirectory;
-        getDates(dataRecieved.iduser)
+
+        currentUserID = dataRecieved.iduser;
 
         currentUser = user;
         console.log('User signed in:', user);
