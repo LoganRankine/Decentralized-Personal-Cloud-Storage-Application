@@ -29,7 +29,7 @@
         <% if (Image != undefined ) { %>
             <% Image.forEach(image => { %>
                 <a href="http://<%= server_location %><%= userName %>/<%= image.filename %>" class="column">
-                    <!--<img class="previewImage" src="http://<%= server_location %><%= userName %>/<%= image %>">-->
+                    <!--<img class="previewImage" src="http://<%= server_location %><%= userName %>/<%= image.filename %>">-->
                     <label class="imageName"><%= image.filename %></label>
                     <label class="fileType"><%= image.filetype %></label>
                     <label class="dateuploaded"><%= image.dateuploaded %></label>

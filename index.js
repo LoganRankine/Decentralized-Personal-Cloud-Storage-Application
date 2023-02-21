@@ -3,11 +3,16 @@ const bcrypt = require("bcrypt");
 const fs = require('fs');
 const http = require('http');
 const cookieParser = require('cookie-parser');
+const crypto = require('crypto')
 
 /*
 const example_class = require('./example_class')
 const temp = new example_class()
 */
+const signIn = require('./SignInClass') 
+
+
+let UserTokens = [];
 
 const app = express();
 
@@ -17,12 +22,13 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = '10.0.0.15'
+const FileServerIP = 'localhost'
 const FileServerPort = 3001
-const IPaddress = '10.0.0.15'
+const IPaddress = 'localhost'
 const PortNummber = 3000
 
 const mysql = require('mysql');
+const { resolve } = require('path');
 
 let currentUser;
 let currentUserID;
@@ -89,12 +95,19 @@ app.get('/accountmain-page/accountmain.html', async (req, res) => {
 
   console.log(req.cookies) 
 
-  if(req.cookies.userID == null){
+  if(req.cookies.SessionID == null){
     res.send("Session expired");
     res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
   }
   else{
-    GetUserImages(req.cookies.userID, res, req);
+    let sessionID = req.cookies.SessionID
+    let user;
+    UserTokens.forEach(element=>{
+      if(element.SessionID == sessionID){
+        user = element
+      }
+    })
+    GetUserImages(user, res, req);
   }
 
   
@@ -110,8 +123,25 @@ app.get('/accountmain-page/accountmain-script.js', async (req, res) => {
 
 app.get('/Logout', async(req,res)=>{
   currentUser = null;
+  currentUserID = null;
+  var cookie = req.cookies.SessionID
+  RemoveToken(cookie)
+  res.clearCookie("SessionID")
+  
   res.redirect("http://" + IPaddress + ':' + PortNummber + '/')
+  
+  //res.clearCookie("userName");
 })
+
+async function RemoveToken(p_session_ID){
+  let newArray = [];
+  UserTokens.forEach(element =>{
+    if(element.SessionID != p_session_ID){
+      newArray.push(element)
+    }
+  })
+  UserTokens = newArray
+}
 
 app.post('/createAccount', async (req, res) => {
   console.log(req.body);
@@ -120,8 +150,13 @@ app.post('/createAccount', async (req, res) => {
 
 app.post('/signIn', async (req, res) => {
   console.log(req.body);
-  UserSignIn(res, req.body.username, req.body.password);
+  
+  const usertoken = await signIn.UserSignIn(connection, res, req.body.username, req.body.password, PortNummber,IPaddress)
+  UserTokens.push(usertoken)
+  
+  //UserSignIn(res, req.body.username, req.body.password);
 });
+
 
 app.all('*', function (req, res) {
   res.send("404 not found")
@@ -134,17 +169,17 @@ app.listen(PortNummber, (req,res) => {
 //Gets all the locations of files stored on file storage
 async function GetUserImages(p_userID, res, req) {
 
-  let sql = "SELECT fileinformation.filename, fileinformation.dateuploaded, fileinformation.filetype FROM fileid JOIN user on fileid.UserID=user.iduser JOIN fileinformation on fileid.FileID=fileinformation.FileID WHERE FileID.UserID=" + p_userID
+  let sql = "SELECT fileinformation.filename, fileinformation.dateuploaded, fileinformation.filetype FROM fileid JOIN user on fileid.UserID=user.iduser JOIN fileinformation on fileid.FileID=fileinformation.FileID WHERE FileID.UserID=" + p_userID.UserID
   connection.query(sql, async function(err,result){
     if(err) throw err;
 
     parsedData = result
     //Checks whether there is data that has been sent
     if(parsedData != undefined){
-      res.render('accountmain.ejs', { userName: req.cookies.userName, Image: parsedData, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
+      res.render('accountmain.ejs', { userName: p_userID.UserName, Image: parsedData, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
     }
     else{
-      res.render('accountmain.ejs', { userName: req.cookies.userName, ImageSource: undefined});
+      res.render('accountmain.ejs', { userName: p_userID.UserName, ImageSource: undefined});
     }
 
     
@@ -155,6 +190,10 @@ async function GetUserImages(p_userID, res, req) {
   async function getDates(userID){
     
   }
+
+ async function addUserToken(p_user){
+  UserTokens.push(p_user)
+}
 
 async function UserSignIn(res, user, password) {
   //check if user exists
@@ -175,13 +214,7 @@ async function UserSignIn(res, user, password) {
       if (await comparePassword(password, dataRecieved.password) == true) {
 
         //Takes user to account and sets their directory
-        let options = {
-          maxAge: 1000 * 60 * 15, // would expire after 15 minutes
-          httpOnly: true, // The cookie only accessible by the web server
-        }
-        //set cookie
-        res.cookie('userID', dataRecieved.iduser, options)
-        res.cookie('userName', dataRecieved.username,options)
+        GenerateToken(res, dataRecieved.iduser, user)
         res.redirect('http://' + IPaddress +':' + PortNummber+'/accountmain-page/accountmain.html');
 
         user_directoty = dataRecieved.userDirectory;
@@ -294,6 +327,25 @@ async function CreateUserAccount(user, password) {
   }).end(createUserDirectory)
 
   await createNewDirectory;
+}
+
+async function GenerateToken(res, id, name){
+  //Generate random string to be used as cookie token
+  const newUserToken = crypto.randomBytes(20).toString('base64')
+  
+  //Cookie options
+  const options = {
+    maxAge: 1000 * 60 * 15, // would expire after 15 minutes
+    httpOnly: true, // The cookie only accessible by the web server
+  }
+  //set cookie
+  res.cookie('SessionID', newUserToken, options)
+
+  const user = {SessionID: newUserToken, UserID: id, UserName: name}
+
+   UserTokens.push(user)
+  //res.cookie('userID', dataRecieved.iduser, options)
+  //res.cookie('userName', dataRecieved.username,options)
 }
 /*
 const http = require('http')

@@ -15,9 +15,9 @@ body{
 .showFiles{
     display: block;
     background-color: white;
-    margin-right: 20rem;
+    margin-right: 10rem;
     margin-top: 1rem;
-    margin-left: 0.5rem;
+    margin-left: 10rem;
     margin-bottom: 0.5rem;
 }
 
@@ -28,6 +28,7 @@ a:link{
 .previewImage{
     height: 3rem;
     width: 3rem;
+    background-image: url(ImageAssets/fileicon.png);
 }
 
 .fileType{
