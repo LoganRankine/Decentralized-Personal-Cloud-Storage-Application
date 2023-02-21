@@ -48,7 +48,7 @@ async function UserSignIn(connection,res, user, password, PortNummber,IPaddress)
 
   async function GenerateToken(res, id, name){
     //Generate random string to be used as cookie token
-    const newUserToken = crypto.randomBytes(20).toString('base64')
+    const newUserToken = crypto.randomBytes(20).toString('base64url')
     
     //Cookie options
     const options = {
