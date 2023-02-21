@@ -10,6 +10,7 @@ const example_class = require('./example_class')
 const temp = new example_class()
 */
 const signIn = require('./SignInClass') 
+const createUser = require('./CreateUserClass') 
 
 
 let UserTokens = [];
@@ -129,8 +130,6 @@ app.get('/Logout', async(req,res)=>{
   res.clearCookie("SessionID")
   
   res.redirect("http://" + IPaddress + ':' + PortNummber + '/')
-  
-  //res.clearCookie("userName");
 })
 
 async function RemoveToken(p_session_ID){
@@ -145,7 +144,8 @@ async function RemoveToken(p_session_ID){
 
 app.post('/createAccount', async (req, res) => {
   console.log(req.body);
-  UserValidation(res, req.body.username, req.body.password, req.body.confirmpassword);
+  createUser.UserValidation(connection,res, req.body.username, req.body.password, req.body.confirmpassword,IPaddress,PortNummber, FileServerIP,FileServerPort)
+  //UserValidation(res, req.body.username, req.body.password, req.body.confirmpassword);
 });
 
 app.post('/signIn', async (req, res) => {
@@ -153,8 +153,6 @@ app.post('/signIn', async (req, res) => {
   
   const usertoken = await signIn.UserSignIn(connection, res, req.body.username, req.body.password, PortNummber,IPaddress)
   UserTokens.push(usertoken)
-  
-  //UserSignIn(res, req.body.username, req.body.password);
 });
 
 
@@ -186,167 +184,6 @@ async function GetUserImages(p_userID, res, req) {
   })
 
   }
-
-  async function getDates(userID){
-    
-  }
-
- async function addUserToken(p_user){
-  UserTokens.push(p_user)
-}
-
-async function UserSignIn(res, user, password) {
-  //check if user exists
-  connection.query("SELECT * FROM user WHERE username=" + "'" + user + "'", async function (err, result, fields) {
-    if (err) throw err;
-
-    //checks if anything is recieved back. Most likeley means username doesn't exist
-    if (result.length == 0) {
-      res.send("Incorrect username or password");
-      console.log("Username doesn't exist")
-    }
-
-    // username exists, checking password
-    else {
-      var dataRecieved = result[0];
-
-      //compares password recieved from user to password recieved from server
-      if (await comparePassword(password, dataRecieved.password) == true) {
-
-        //Takes user to account and sets their directory
-        GenerateToken(res, dataRecieved.iduser, user)
-        res.redirect('http://' + IPaddress +':' + PortNummber+'/accountmain-page/accountmain.html');
-
-        user_directoty = dataRecieved.userDirectory;
-
-        currentUserID = dataRecieved.iduser;
-
-        currentUser = user;
-        console.log('User signed in:', user);
-      }
-      else {
-        res.send("Incorrect username or password");
-        console.log('password incorrect')
-      }
-    }
-  });
-}
-
-async function comparePassword(password, hash) {
-  const result = await bcrypt.compare(password, hash);
-  return result;
-}
-
-async function UserValidation(res, user, password, confirm_password) {
-  var passwordMatch = false;
-
-  //Check if passwords match
-  if (password != confirm_password) {
-    console.log("passwords don't match")
-    res.send("Passowrds don't match, redirecting...")
-  }
-  else {
-    passwordMatch = true;
-    console.log('password matches')
-  }
-  //check if user exists already
-  if (passwordMatch == true) {
-    connection.query("SELECT * FROM user WHERE username=" + "'" + user + "'", async function (err, result, fields) {
-      if (err) throw err;
-
-      if (result.length == 0) {
-        console.log(user, "doesn't exist, creating profile")
-        CreateUserAccount(user, password)
-        res.redirect('http://' + IPaddress +':' + PortNummber+ '/');
-      }
-      else {
-        console.log("user already exists:", user)
-        res.send("username already exists")
-      }
-    })
-  }
-}
-
-//Create user account
-async function CreateUserAccount(user, password) {
-  plaintextPassword = password;
-
-  //Turns username into a JOSN object 
-  let createUserDirectory = JSON.stringify({
-    'user': user
-  });
-
-  // options to send to storage server and puts username in header so server knows what to 
-  //call the new directory
-  let options = {
-    hostname: FileServerIP,
-    port: FileServerPort,
-    path: '/CreateUserDirectory',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(createUserDirectory)
-    }
-  }
-
-  //Sends request to storage server 
-  let createNewDirectory = http.request(options, async (res) => {  
-    let userDirectoryFromServer = '' 
-    res.setEncoding('utf8');
-    res.on('data', (chunk) => {
-      //Puts chunked data recieved into a variable
-      userDirectoryFromServer += chunk;
-    });
-    
-    // Ending the response 
-    res.on('end', () => {
-        //Ends stream to server
-        createNewDirectory.write(createUserDirectory)
-        createNewDirectory.end()
-
-        //Parses data recieved from server
-        console.log('Body:', JSON.parse(userDirectoryFromServer))
-        let directory = JSON.parse(userDirectoryFromServer)
-        //Hashing passowrd
-        bcrypt.genSalt(10, async (err, salt) => {
-        bcrypt.hash(plaintextPassword, salt, async function (err, hash) {
-        //Create JSON object with details to add user to database
-        const userDetails = { username: user, password: hash, userDirectory: directory.CreatedDirectory}
-
-        //Insert new user details into SQL database
-        connection.query('INSERT INTO user SET ?', userDetails, async function (err, result) {
-        if (err) throw err;
-          console.log("user added:", user)
-        })
-        });
-    });
-    });
-       
-  }).on("error", (err) => {
-    console.log("Error: ", err)
-  }).end(createUserDirectory)
-
-  await createNewDirectory;
-}
-
-async function GenerateToken(res, id, name){
-  //Generate random string to be used as cookie token
-  const newUserToken = crypto.randomBytes(20).toString('base64')
-  
-  //Cookie options
-  const options = {
-    maxAge: 1000 * 60 * 15, // would expire after 15 minutes
-    httpOnly: true, // The cookie only accessible by the web server
-  }
-  //set cookie
-  res.cookie('SessionID', newUserToken, options)
-
-  const user = {SessionID: newUserToken, UserID: id, UserName: name}
-
-   UserTokens.push(user)
-  //res.cookie('userID', dataRecieved.iduser, options)
-  //res.cookie('userName', dataRecieved.username,options)
-}
 /*
 const http = require('http')
 
