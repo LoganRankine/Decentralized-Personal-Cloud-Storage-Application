@@ -12,7 +12,7 @@ async function GetUserImages(p_userID, res, req, connection,FileServerIP,FileSer
       if(parsedData != undefined){
         //Send ALL entries retrieved from database to store server- Retruns with random token
         const files = await GetFileToken(p_userID,parsedData,FileServerIP,FileServerPort)
-        res.render('accountmain.ejs', { SessionID: p_userID.SessionID,userName: p_userID.UserName, Image: files, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
+        res.render('accountmain.ejs', { count: 1,SessionID: p_userID.SessionID,userName: p_userID.UserName, Image: files, server_location: FileServerIP + ':' + FileServerPort + '/', webserver_location: IPaddress + ':' + PortNummber + "/Logout"});
       }
       else{
         res.render('accountmain.ejs', { userName: p_userID.UserName, ImageSource: undefined});

@@ -5,6 +5,7 @@ const http = require('http');
 const cookieParser = require('cookie-parser');
 const crypto = require('crypto')
 const mysql = require('mysql');
+const cors = require('cors')
 
 /*
 const example_class = require('./example_class')
@@ -19,16 +20,19 @@ let UserTokens = [];
 
 const app = express();
 
+
 app.use(cookieParser());
 app.set('viewengine', 'ejs');
 app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = '10.125.5.177'
+const FileServerIP = '10.0.0.15'
 const FileServerPort = 3001
-const IPaddress = '10.125.5.177'
+const IPaddress = '10.0.0.15'
 const PortNummber = 3000
+
+app.use(cors({origin: FileServerIP}))
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
@@ -112,8 +116,8 @@ app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain-style.css');
 });
 
-app.get('/accountmain-page/accountmain-script.js', async (req, res) => {
-  await res.send(__dirname + '/homepage/accountmain-page/accountmain-script.js');
+app.get('/accountmain-page/scriptFile/accountmain-script.js', async (req, res) => {
+  await res.sendFile(__dirname + '/views/scriptFile/accountmain-script.js');
 });
 
 app.get('/Logout', async(req,res)=>{

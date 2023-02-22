@@ -2,6 +2,7 @@
     <head>
         <title>Account Page</title>
         <link rel="stylesheet" href="accountmain-style.css">
+        <script src="scriptFile\accountmain-script.js"></script>
     </head>
     <body class="background">
 
@@ -28,12 +29,18 @@
 
         <% if (Image != undefined ) { %>
             <% Image.forEach(image => { %>
-                <a href="http://<%= server_location %><%= userName %>/<%= image.filename %>" class="column">
+                <label hidden="hidden"><%= count++%></label>
+                
+                <a id="button" class="column" download="<%= image.filename %>">
                     <!--<img class="previewImage" src="http://<%= server_location %><%= userName %>/<%= image.filename %>">-->
                     <label class="imageName"><%= image.filename %></label>
+                    <!--<a class="imageName" href="http://<%= server_location %><%= SessionID %>/<%= image.token %>"><%= image.filename %></a>-->
+                    <div class="popup download-button" onclick="myFunction('<%= count %>')"> options
+                        <input id="myPop<%= count%>" class="popuptext" type="button" onclick="download('<%= server_location %><%= SessionID %>/<%= image.token %>', '<%= image.filename %>')" value="download" />
+                      </div>
+                    
                     <label class="fileType"><%= image.filetype %></label>
                     <label class="dateuploaded"><%= image.dateuploaded %></label>
-                    
                 </a>
             <% }); %>
         <% }%>
