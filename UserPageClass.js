@@ -3,7 +3,7 @@ const http = require('http');
 //Gets all the locations of files stored on file storage
 async function GetUserImages(p_userID, res, req, connection,FileServerIP,FileServerPort,IPaddress,PortNummber) {
 
-    let sql = "SELECT fileinformation.filename, fileinformation.dateuploaded, fileinformation.filetype FROM fileid JOIN user on fileid.UserID=user.iduser JOIN fileinformation on fileid.FileID=fileinformation.FileID WHERE FileID.UserID=" + p_userID.UserID
+    let sql = "SELECT fileinformation.filename, fileinformation.dateuploaded, fileinformation.filetype, fileinformation.FileID FROM fileid JOIN user on fileid.UserID=user.iduser JOIN fileinformation on fileid.FileID=fileinformation.FileID WHERE FileID.UserID=" + p_userID.UserID
     connection.query(sql, async function(err,result){
       if(err) throw err;
   

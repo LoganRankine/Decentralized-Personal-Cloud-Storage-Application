@@ -11,7 +11,7 @@
             <a id="username"><%= userName %></a>
 
             <form action="http://<%= server_location %>upload" method="post" enctype="multipart/form-data">
-                <input type="file" name="filetoupload" id="upload" hidden="hidden">
+                <input onclick="fileSelect()" type="file" name="filetoupload" id="upload" hidden="hidden">
                 <label class= "upload-button" for="upload">Choose file</label>
                 <input type="submit" id="submit" hidden>
                 <label for="submit" class="upload-button">Upload</label>
@@ -35,28 +35,23 @@
                     <!--<img class="previewImage" src="http://<%= server_location %><%= userName %>/<%= image.filename %>">-->
                     <label class="imageName"><%= image.filename %></label>
                     <!--<a class="imageName" href="http://<%= server_location %><%= SessionID %>/<%= image.token %>"><%= image.filename %></a>-->
-                    <div class="popup download-button" onclick="myFunction('<%= count %>')"> options
-                        <input id="myPop<%= count%>" class="popuptext" type="button" onclick="download('<%= server_location %><%= SessionID %>/<%= image.token %>', '<%= image.filename %>')" value="download" />
-                      </div>
-                    
+                    <input id="my-input" data-dropdown="true" hidden/>
+                    <select onchange="select('<%= server_location %><%= SessionID %>/<%= image.token %>', '<%= count %>' ,'<%= image.filename %>')" class="popup download-button" id="select-action<%= count %>">
+                        <option value="empty"></option>
+                        <option value="download" >download</option>
+                        <option value="delete">delete</option>
+                    </select>
+                    <div class="popup download-button" onclick="myFunction('<%= count %>')"> ...
+                        <input id="myPopDownload<%= count%>" class="popuptext" type="button" onclick="download('<%= server_location %><%= SessionID %>/<%= image.token %>', '<%= image.filename %>')" value="download" />
+                        <input id="myPopDelete<%= count%>" class="popuptext" type="button" value="delete"/>
+                
+                    </div>
                     <label class="fileType"><%= image.filetype %></label>
                     <label class="dateuploaded"><%= image.dateuploaded %></label>
+
                 </a>
             <% }); %>
-        <% }%>
-
-        </div>
-
-        <!--
-        <script src="accountmain-script.js"></script>
-        -->
-        <!--
-        <a class="image_button">
-            <img class="image" src="http://localhost:3000/accountmain-page/Image_1.JPG" alt="River" width="200" height="200">
-            <label>Image_2.jpg</label>
-        </a>
-        -->
-        
+        <% }%>      
 
     </body>
 </html>

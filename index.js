@@ -154,6 +154,34 @@ app.post('/signIn', async (req, res) => {
   UserTokens.push(usertoken)
 });
 
+app.delete('/delete/*', function (req,res){
+  ///delete/Euu7McoxAJSM4qr25C02meZcPSw/37
+  //get url
+  let URLrequest = req.url.toString()
+  //Split and get which user is making request
+  let userToken = URLrequest.split('/')[2]
+  //Split and get what file needs removing
+  let fileID = URLrequest.split('/')[3]
+
+  //Find the user details making request
+  UserTokens.forEach(user =>{
+    if(user.SessionID == userToken){
+      const currentUser = user
+      const sqlQuery = "DELETE FROM `userprofile`.`fileinformation` WHERE (`FileID` = '"+ fileID +"')"
+      const sqlQuery2 = "DELETE FROM `userprofile`.`fileid` WHERE (`FileID` = '"+ fileID +"') and (`UserID` = '"+ currentUser.iduser +"');"
+      connection.query(sqlQuery,async function (err, result, fields){
+        console.log(result)
+      })
+      connection.query(sqlQuery2,async function (err, result, fields){
+        console.log(result)
+      })
+      console.log('User found', user.UserName)
+    }
+  })
+  console.log('deleting file')
+
+})
+
 app.all('*', function (req, res) {
   res.send("404 not found")
 });
@@ -161,3 +189,5 @@ app.all('*', function (req, res) {
 app.listen(PortNummber, (req,res) => {
   console.log('Web server is running on IP address:', IPaddress +',','Port number:',PortNummber);
 });
+
+
