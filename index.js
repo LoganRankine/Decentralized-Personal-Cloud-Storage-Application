@@ -27,9 +27,9 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = '10.0.0.15'
+const FileServerIP = '192.168.0.109'
 const FileServerPort = 3001
-const IPaddress = '10.0.0.15'
+const IPaddress = '192.168.0.109'
 const PortNummber = 3000
 
 app.use(cors({origin: FileServerIP}))

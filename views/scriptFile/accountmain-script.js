@@ -1,3 +1,5 @@
+
+
 console.log('Script is read by browser!')
 
 async function fileSelect(){
@@ -36,7 +38,7 @@ async function myFunction(id){
     popup1.classList.toggle("show")
 }
 
-async function select(ImageURL, id, imagename){
+async function select(ImageURL, id, imagename,location, p_url){
     var select = "select-action" + id
     var selectedOption = document.getElementById(select).value;
     if(selectedOption == 'download')
@@ -46,5 +48,44 @@ async function select(ImageURL, id, imagename){
     else if(selectedOption == 'delete'){
         await m_delete(ImageURL,imagename)
     }
+    else if(selectedOption == "rename"){
+         showRename(id,location, p_url)
+    }
     console.log('Selected option ' + selectedOption)
+}
+
+async function showRename(id, location, p_url){
+    var renamebox = document.getElementById("rename-dialog" + id)
+    var renameinput = document.getElementById("rename-input" + id)
+    var cancel = document.getElementById("rename-cancel" + id)
+    var enter = document.getElementById("rename-button" + id)
+    renamebox.showModal()
+    cancel.addEventListener('click',(e)=>{
+        renamebox.close()
+    })
+    enter.addEventListener('click',async (e)=>{
+        var input_value = renameinput.value
+        console.log('inputted', input_value)
+
+        if(input_value.charAt(0) == '.'){
+            console.log('cannot start with .')
+        }
+        else{
+            
+            //var url = new URL()
+            info = JSON.stringify({
+                'file' : p_url
+            })
+            var headers = new Headers()
+            
+            headers.append('Content-Type', 'application/json')
+            headers.append('Content-Length', info.length)
+          
+            var file = await fetch('http://' + location + 'rename/',{mode:'cors',referrerPolicy:'no-referrer', method: 'PUT', 
+            header: headers,
+
+            body: info})
+        }
+        //Check input for unsupported values
+    })
 }
