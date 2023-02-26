@@ -27,16 +27,16 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = '192.168.0.109'
+const FileServerIP = '10.0.0.39'
 const FileServerPort = 3001
-const IPaddress = '192.168.0.109'
+const IPaddress = '10.0.0.39'
 const PortNummber = 3000
 
 app.use(cors({origin: FileServerIP}))
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
-  host: "127.0.0.1",
+  host: "10.0.0.15",
   user: "root",
   password: "password",
   database: "userprofile",

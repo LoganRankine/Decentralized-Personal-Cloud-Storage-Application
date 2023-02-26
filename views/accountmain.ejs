@@ -33,7 +33,10 @@
                 
                 <a id="button" class="column" download="<%= image.filename %>">
                     <!--<img class="previewImage" src="http://<%= server_location %><%= userName %>/<%= image.filename %>">-->
-                    <label class="imageName"><%= image.filename %></label>
+                    <label for="name<%= count %>"  class="imageName"><%= image.filename %></label>
+
+                    <input id="name<%= count %>" onclick="DisplayPreview('<%= server_location %><%= SessionID %>/<%= image.token %>')" hidden>
+
                     <!--<a class="imageName" href="http://<%= server_location %><%= SessionID %>/<%= image.token %>"><%= image.filename %></a>-->
                     <input id="my-input" data-dropdown="true" hidden/>
                     <select onchange="select('<%= server_location %><%= SessionID %>/<%= image.token %>', '<%= count %>' ,'<%= image.filename %>','<%= server_location %>','<%= SessionID %>/<%= image.token %>')" class="popup download-button" id="select-action<%= count %>">
@@ -42,13 +45,7 @@
                         <option value="delete">delete</option>
                         <option value="rename">rename</option>
                     </select>
-                    <!--
-                    <div class="popup download-button" onclick="myFunction('<%= count %>')"> ...
-                        <input id="myPopDownload<%= count%>" class="popuptext" type="button" onclick="download('<%= server_location %><%= SessionID %>/<%= image.token %>', '<%= image.filename %>')" value="download" />
-                        <input id="myPopDelete<%= count%>" class="popuptext" type="button" value="delete"/>
-                
-                    </div>
-                    -->
+
                     <label class="fileType"><%= image.filetype %></label>
                     <label class="dateuploaded"><%= image.dateuploaded %></label>
 

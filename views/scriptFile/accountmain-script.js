@@ -2,6 +2,28 @@
 
 console.log('Script is read by browser!')
 
+async function DisplayPreview(ImageURL){
+    var url = new URL('http://'+ ImageURL + '/0')
+    console.log(url.hostname)
+    console.log(url.pathname)
+    var file = await fetch(url,{mode:'cors', referrerPolicy:'no-referrer'})
+    var fileBlob = await file.blob()
+
+    var splittype = fileBlob.type.split('/')
+    if(splittype[0] == 'video' || splittype[0] == 'image'){
+        var fileURL = URL.createObjectURL(fileBlob)
+
+        var link = document.createElement('a')
+        link.href = fileURL
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link) 
+    }
+    
+}
+
+
+
 async function fileSelect(){
     console.log('Upload button pressed')
 }
