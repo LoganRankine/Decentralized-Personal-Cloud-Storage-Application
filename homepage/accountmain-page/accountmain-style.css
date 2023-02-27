@@ -38,6 +38,8 @@ a:link{
     text-transform: lowercase;
     text-align: center;
     margin-top: 1rem;
+    max-width: 50px;
+    overflow: hidden;
 }
 
 .fileType-header{
@@ -99,6 +101,8 @@ a:link{
     color: black;
     font-size: 17px;
     margin-top: 1rem;
+    -webkit-line-clamp: 10;
+    overflow: hidden;
 }
 
 #username{
@@ -120,6 +124,10 @@ a:link{
     margin-left: 1rem;
     margin-bottom: 0.5rem;
     margin-right: 1rem;
+}
+
+.file{
+    cursor: pointer;
 }
 
 .rename-input{
@@ -164,10 +172,6 @@ a:link{
 
 img{
     display: inline;
-}
-
-a{
-    cursor: pointer;
 }
 
 .upload-button{

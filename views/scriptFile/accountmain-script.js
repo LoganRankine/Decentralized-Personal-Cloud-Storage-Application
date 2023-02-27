@@ -11,10 +11,9 @@ async function DisplayPreview(ImageURL){
 
     var splittype = fileBlob.type.split('/')
     if(splittype[0] == 'video' || splittype[0] == 'image'){
-        var fileURL = URL.createObjectURL(fileBlob)
 
         var link = document.createElement('a')
-        link.href = fileURL
+        link.href = url
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link) 
