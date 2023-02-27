@@ -14,6 +14,7 @@ const temp = new example_class()
 const signIn = require('./SignInClass') 
 const createUser = require('./CreateUserClass') 
 const userPage = require('./UserPageClass') 
+const renameFile = require('./RenameFileClass') 
 
 
 let UserTokens = [];
@@ -27,16 +28,16 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = '10.0.0.39'
+const FileServerIP = '10.125.5.177'
 const FileServerPort = 3001
-const IPaddress = '10.0.0.39'
+const IPaddress = '10.125.5.177'
 const PortNummber = 3000
 
 app.use(cors({origin: FileServerIP}))
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
-  host: "10.0.0.15",
+  host: "127.0.0.1",
   user: "root",
   password: "password",
   database: "userprofile",
@@ -54,7 +55,7 @@ app.post('/dateUploaded',async (req,res)=>{
   const r_username = req.body.user
   const r_filename = req.body.filename
   const r_dateuploaded = req.body.dateuploaded
-  let r_fileType = req.body.filename.slice(-3)
+  const r_fileType = req.body.filetype
 
   //Get the users ID from database
   connection.query("SELECT * FROM user WHERE username=" + "'" + r_username + "'", async function (err, userID) {
@@ -154,7 +155,7 @@ app.post('/signIn', async (req, res) => {
   UserTokens.push(usertoken)
 });
 
-app.delete('/delete/*', function (req,res){
+app.delete('/delete/*', async (req,res)=>{
   ///delete/Euu7McoxAJSM4qr25C02meZcPSw/37
   //get url
   let URLrequest = req.url.toString()
@@ -179,6 +180,21 @@ app.delete('/delete/*', function (req,res){
     }
   })
   console.log('deleting file')
+
+})
+
+app.put('/rename', async (req,res)=>{
+console.log(req.body)
+console.log('rename request recieved')
+
+const b_user = req.body.user
+
+UserTokens.forEach(async (user)=>{
+  if(user.SessionID == b_user){
+    await renameFile.RenameFile(connection, req.body, user.UserID)
+    res.send('OK')
+  }
+})
 
 })
 

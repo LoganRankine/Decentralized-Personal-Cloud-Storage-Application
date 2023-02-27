@@ -60,7 +60,7 @@ async function myFunction(id){
     popup1.classList.toggle("show")
 }
 
-async function select(ImageURL, id, imagename,location, p_url){
+async function select(ImageURL, id, imagename,location, userToken, fileToken){
     var select = "select-action" + id
     var selectedOption = document.getElementById(select).value;
     if(selectedOption == 'download')
@@ -71,12 +71,12 @@ async function select(ImageURL, id, imagename,location, p_url){
         await m_delete(ImageURL,imagename)
     }
     else if(selectedOption == "rename"){
-         showRename(id,location, p_url)
+         showRename(id,location,userToken, fileToken)
     }
     console.log('Selected option ' + selectedOption)
 }
 
-async function showRename(id, location, p_url){
+async function showRename(id, location,userToken, fileToken){
     var renamebox = document.getElementById("rename-dialog" + id)
     var renameinput = document.getElementById("rename-input" + id)
     var cancel = document.getElementById("rename-cancel" + id)
@@ -96,17 +96,23 @@ async function showRename(id, location, p_url){
             
             //var url = new URL()
             info = JSON.stringify({
-                'file' : p_url
+                'user' : userToken,
+                'file' : fileToken,
+                'rename': input_value
             })
-            var headers = new Headers()
-            
-            headers.append('Content-Type', 'application/json')
-            headers.append('Content-Length', info.length)
-          
-            var file = await fetch('http://' + location + 'rename/',{mode:'cors',referrerPolicy:'no-referrer', method: 'PUT', 
-            header: headers,
 
+            var url = new URL('http://'+ location + 'rename/')
+          
+            var file = await fetch(url,{mode:'cors', method: 'PUT', headers:{
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Content-Length': info.length
+            },
             body: info})
+            if(file.ok){
+                cancel.click()
+                location.reload()
+            }
         }
         //Check input for unsupported values
     })
