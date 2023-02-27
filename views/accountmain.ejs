@@ -11,10 +11,11 @@
             <a id="username"><%= userName %></a>
 
             <form action="http://<%= server_location %>upload" method="post" enctype="multipart/form-data">
-                <input onclick="fileSelect()" type="file" name="filetoupload" id="upload" hidden="hidden">
+                <input onchange="fileSelect()" type="file" name="filetoupload" id="upload" hidden="hidden">
                 <label class= "upload-button" for="upload">Choose file</label>
+                <label id="filename"></label>
                 <input type="submit" id="submit" hidden>
-                <label for="submit" class="upload-button">Upload</label>
+                <label for="submit" class="upload-button" id="uploadButton">Upload</label>
                 <input hidden="hidden" name="username" id="username" value="<%= userName %>" />
             </form>
         </div>
@@ -32,28 +33,28 @@
                 <label hidden="hidden"><%= count++%></label>
                 
                 <a id="button" class="column" download="<%= image.filename %>">
-                    <!--<img class="previewImage" src="http://<%= server_location %><%= userName %>/<%= image.filename %>">-->
+
                     <label for="name<%= count %>"  class="imageName"><%= image.filename %></label>
 
                     <input id="name<%= count %>" onclick="DisplayPreview('<%= server_location %><%= SessionID %>/<%= image.token %>')" hidden>
 
-                    <!--<a class="imageName" href="http://<%= server_location %><%= SessionID %>/<%= image.token %>"><%= image.filename %></a>-->
                     <input id="my-input" data-dropdown="true" hidden/>
+
                     <select onchange="select('<%= server_location %><%= SessionID %>/<%= image.token %>', '<%= count %>' ,'<%= image.filename %>','<%= server_location %>','<%= SessionID %>', '<%= image.token %>')" class="popup download-button" id="select-action<%= count %>">
                         <option value="empty"></option>
                         <option value="download" >download</option>
-                        <option value="delete">delete</option>
                         <option value="rename">rename</option>
+                        <option class="deleteOption" value="delete">delete</option>
                     </select>
 
                     <label class="fileType"><%= image.filetype %></label>
                     <label class="dateuploaded"><%= image.dateuploaded %></label>
 
                     <dialog id="rename-dialog<%= count %>">
-                        <label>Rename file: <%= image.filename %></label><br>
-                        <input type="text" id="rename-input<%= count %>"><br>
-                        <button id="rename-cancel<%= count %>">cancel</button>
-                        <button id="rename-button<%= count %>">rename</button>
+                        <label class="renamebox-title">Rename file: <%= image.filename %></label><br>
+                        <input class="rename-input" type="text" id="rename-input<%= count %>"><br>
+                        <button class="cancel-button button" id="rename-cancel<%= count %>">cancel</button>
+                        <button class="rename-button button" id="rename-button<%= count %>">rename</button>
                     </dialog>
 
                 </a>

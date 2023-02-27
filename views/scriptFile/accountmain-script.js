@@ -26,6 +26,15 @@ async function DisplayPreview(ImageURL){
 
 async function fileSelect(){
     console.log('Upload button pressed')
+    var upload = document.getElementById('upload')
+    var filename = document.getElementById('filename')
+    var submit = document.getElementById('uploadButton')
+    submit.style.backgroundColor = "green"
+    let name = upload.value
+    filename.innerHTML = 'File selected'
+    filename.style.visibility = "visible"
+    console.log(upload.value)
+
 }
 
 async function m_delete(image_URL, p_name){
@@ -73,6 +82,7 @@ async function select(ImageURL, id, imagename,location, userToken, fileToken){
     else if(selectedOption == "rename"){
          showRename(id,location,userToken, fileToken)
     }
+    
     console.log('Selected option ' + selectedOption)
 }
 
@@ -87,6 +97,7 @@ async function showRename(id, location,userToken, fileToken){
     })
     enter.addEventListener('click',async (e)=>{
         var input_value = renameinput.value
+        input_value.trim()
         console.log('inputted', input_value)
 
         if(input_value.charAt(0) == '.'){
