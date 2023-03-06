@@ -36,17 +36,18 @@ async function fileSelect(){
 
 }
 
-async function m_delete(image_URL, p_name){
-    var url = new URL('http://'+ image_URL + '/1')
-    var file = await fetch(url,{referrerPolicy:'no-referrer'})
+async function m_delete(image_URL, p_name, location, userToken, fileToken){
+    var url = new URL('http://' + location + 'delete/' + userToken + '/' + fileToken)
+    var file = await fetch(url,{referrerPolicy:'no-referrer', method: 'DELETE'})
     if(file.ok){
         alert(p_name + ': Deleted, refreshing')
         location.reload()
     }
 }
 
-async function download(image_URL, name){
-    var url = new URL('http://'+ image_URL + '/0')
+async function download(image_URL, name, location, user, fileToken){
+    var url = new URL('http://' + location + 'download/' + user + '/' + fileToken)
+    //var url = new URL('http://'+ image_URL + '/0')
     console.log(url.hostname)
     console.log(url.pathname)
     var file = await fetch(url,{mode:'cors', referrerPolicy:'no-referrer'})
@@ -73,10 +74,10 @@ async function select(ImageURL, id, imagename,location, userToken, fileToken){
     var selectedOption = document.getElementById(select).value;
     if(selectedOption == 'download')
     {
-        await download(ImageURL,imagename)
+        await download(ImageURL,imagename, location, userToken, fileToken)
     }
     else if(selectedOption == 'delete'){
-        await m_delete(ImageURL,imagename)
+        await m_delete(ImageURL,imagename, location, userToken, fileToken)
     }
     else if(selectedOption == "rename"){
          showRename(id,location,userToken, fileToken)
