@@ -121,7 +121,7 @@ app.get('/accountmain-page/scriptFile/accountmain-script.js', async (req, res) =
   await res.sendFile(__dirname + '/views/scriptFile/accountmain-script.js');
 });
 
-app.get('/Logout', async(req,res)=>{
+app.delete('/Logout', async(req,res)=>{
   currentUser = null;
   currentUserID = null;
   var cookie = req.cookies.SessionID

@@ -2,8 +2,8 @@
 
 console.log('Script is read by browser!')
 
-async function DisplayPreview(ImageURL){
-    var url = new URL('http://'+ ImageURL + '/0')
+async function DisplayPreview(location, userToken, fileToken){
+    var url = new URL('http://' + location + 'preview/' + userToken + '/' + fileToken)
     console.log(url.hostname)
     console.log(url.pathname)
     var file = await fetch(url,{mode:'cors', referrerPolicy:'no-referrer'})
@@ -14,14 +14,13 @@ async function DisplayPreview(ImageURL){
 
         var link = document.createElement('a')
         link.href = url
+        link.target = "_blank"
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link) 
     }
     
 }
-
-
 
 async function fileSelect(){
     console.log('Upload button pressed')
@@ -127,4 +126,16 @@ async function showRename(id, location,userToken, fileToken){
         }
         //Check input for unsupported values
     })
+}
+
+async function Logout(location, userToken){
+
+    //Log out of web server
+
+    var url = new URL('http://' + location + '/Logout')
+    var file = await fetch(url,{referrerPolicy:'no-referrer', method: 'DELETE'})
+
+    window.location.replace("http://" + location + "/")
+
+    console.log(userToken, "Logged out!")
 }

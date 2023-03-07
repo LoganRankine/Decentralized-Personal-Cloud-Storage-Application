@@ -7,7 +7,10 @@
     <body class="background">
 
         <div class="top_navbar">
-            <a id="logout" href="http://<%= webserver_location %>">Log out</a>
+
+            <label for="logout" id="logout_button">Log out</label>
+            <input hidden="hidden" type="logout" id="logout" onclick="Logout('<%= webserver_location %>','<%= SessionID %>')">
+            
             <a id="username"><%= userName %></a>
 
             <form action="http://<%= server_location %>upload" method="post" enctype="multipart/form-data">
@@ -36,7 +39,7 @@
 
                     <label for="name<%= count %>"  class="imageName file"><%= image.filename %></label>
 
-                    <input id="name<%= count %>" onclick="DisplayPreview('<%= server_location %><%= SessionID %>/<%= image.token %>')" hidden>
+                    <input id="name<%= count %>" onclick="DisplayPreview('<%= server_location %>','<%= SessionID %>', '<%= image.token %>')" hidden>
 
                     <input id="my-input" data-dropdown="true" hidden/>
 
