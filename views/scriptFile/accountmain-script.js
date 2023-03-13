@@ -4,6 +4,8 @@ console.log('Script is read by browser!')
 
 async function DisplayPreview(location, userToken, fileToken){
     var url = new URL('http://' + location + 'preview/' + userToken + '/' + fileToken)
+    window.open(url,'_blank').focus()
+    /*
     console.log(url.hostname)
     console.log(url.pathname)
     var file = await fetch(url,{mode:'cors', referrerPolicy:'no-referrer'})
@@ -19,7 +21,7 @@ async function DisplayPreview(location, userToken, fileToken){
         link.click()
         document.body.removeChild(link) 
     }
-    
+    */
 }
 
 async function fileSelect(){
@@ -40,7 +42,7 @@ async function m_delete(image_URL, p_name, location, userToken, fileToken){
     var file = await fetch(url,{referrerPolicy:'no-referrer', method: 'DELETE'})
     if(file.ok){
         alert(p_name + ': Deleted, refreshing')
-        location.reload()
+        window.location.reload()
     }
 }
 

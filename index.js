@@ -7,6 +7,9 @@ const crypto = require('crypto')
 const mysql = require('mysql');
 const cors = require('cors')
 
+const file = require("./webServer_configuration.json")
+const database_config = require("./database_config.json")
+
 /*
 const example_class = require('./example_class')
 const temp = new example_class()
@@ -15,6 +18,7 @@ const signIn = require('./SignInClass')
 const createUser = require('./CreateUserClass') 
 const userPage = require('./UserPageClass') 
 const renameFile = require('./RenameFileClass') 
+const dateUploaded = require('./dateUploadedClass')
 
 
 let UserTokens = [];
@@ -28,19 +32,19 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const FileServerIP = '10.0.0.14'
-const FileServerPort = 3001
-const IPaddress = '10.0.0.14'
-const PortNummber = 3000
+const FileServerIP = file.FileServerIP
+const FileServerPort = file.FileServerPort
+const IPaddress = file.WebServerIP
+const PortNummber = file.WebServerPort
 
 app.use(cors({origin: FileServerIP}))
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
-  password: "password",
-  database: "userprofile",
+  host: database_config.host,
+  user: database_config.user,
+  password: database_config.password,
+  database: database_config.database,
   multipleStatements: true
 });
 
@@ -52,29 +56,9 @@ connection.connect(async function (err) {
 
 //adds the date the file was uploaded
 app.post('/dateUploaded',async (req,res)=>{
-  const r_username = req.body.user
-  const r_filename = req.body.filename
-  const r_dateuploaded = req.body.dateuploaded
-  const r_fileType = req.body.filetype
+  //
+  await dateUploaded.dateUploaded(connection,req,res)
 
-  //Get the users ID from database
-  connection.query("SELECT * FROM user WHERE username=" + "'" + r_username + "'", async function (err, userID) {
-    if (err) throw err;
-    
-      //Once UserID recieved. Add UserID to FileID Table, file id is auto incremented
-      const addTofileID = { UserID: userID[0].iduser}
-      connection.query('INSERT INTO fileid SET ?', addTofileID, async(err,fileID)=>{
-      if (err) throw err;
-      const addTofileInfo = { FileID: fileID.insertId ,filename: r_filename, dateuploaded: r_dateuploaded, filetype: r_fileType}
-
-      //Once UserID added to FileID. Use the FileID recieved to add fileID and info to 
-      //fileinformation table
-      connection.query('INSERT INTO fileinformation SET ?', addTofileInfo, async(err,result)=>{
-        if (err) throw err;
-        console.log('File information added: ', 'Filename:',r_filename,', Date Uploaded:',r_dateuploaded)
-      })
-    })
-  })
 })
 
 app.get('/', async (req, res) => {
@@ -122,8 +106,6 @@ app.get('/accountmain-page/scriptFile/accountmain-script.js', async (req, res) =
 });
 
 app.delete('/Logout', async(req,res)=>{
-  currentUser = null;
-  currentUserID = null;
   var cookie = req.cookies.SessionID
   RemoveToken(cookie)
   res.clearCookie("SessionID")
@@ -198,9 +180,13 @@ UserTokens.forEach(async (user)=>{
 
 })
 
-app.all('*', function (req, res) {
+app.all('*', async (req, res)=> {
   res.send("404 not found")
 });
+
+app.get("/test/newUserCreated", async (res,req)=>{
+  res.send('newUserCreated')
+})
 
 app.listen(PortNummber, (req,res) => {
   console.log('Web server is running on IP address:', IPaddress +',','Port number:',PortNummber);
