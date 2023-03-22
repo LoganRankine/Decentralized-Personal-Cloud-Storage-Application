@@ -69,21 +69,21 @@ app.get('/style.css', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/style.css');
 });
 
-app.get('/createaccount-page/create-account.html', async (req, res) => {
+app.get('/CreateAccount', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/createaccount-page/create-account.html');
 });
 
-app.get('/createaccount-page/createpage-style.css', async (req, res) => {
+app.get('/createpage-style.css', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/createaccount-page/createpage-style.css');
 });
 
-app.get('/accountmain-page/accountmain.html', async (req, res) => {
+app.get('/AccountPage', async (req, res) => {
   
   console.log(req.cookies) 
 
   if(req.cookies.SessionID == null){
     res.send("Session expired");
-    res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
+    //res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
   }
   else{
     let sessionID = req.cookies.SessionID
@@ -97,20 +97,25 @@ app.get('/accountmain-page/accountmain.html', async (req, res) => {
   }
 });
 
-app.get('/accountmain-page/accountmain-style.css', async (req, res) => {
+app.get('/accountmain-style.css', async (req, res) => {
   await res.sendFile(__dirname + '/homepage/accountmain-page/accountmain-style.css');
 });
 
-app.get('/accountmain-page/scriptFile/accountmain-script.js', async (req, res) => {
+app.get('/scriptFile/accountmain-script.js', async (req, res) => {
   await res.sendFile(__dirname + '/views/scriptFile/accountmain-script.js');
 });
 
 app.delete('/Logout', async(req,res)=>{
   var cookie = req.cookies.SessionID
-  RemoveToken(cookie)
-  res.clearCookie("SessionID")
-  
-  res.redirect("http://" + IPaddress + ':' + PortNummber + '/')
+  if(cookie != undefined){
+    RemoveToken(cookie)
+    res.clearCookie("SessionID")
+    
+    res.redirect("http://" + IPaddress + ':' + PortNummber + '/')
+  }
+  else{
+    res.redirect("http://" + IPaddress + ':' + PortNummber + '/')
+  }
 })
 
 async function RemoveToken(p_session_ID){

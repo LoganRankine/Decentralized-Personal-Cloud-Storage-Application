@@ -25,7 +25,7 @@ async function UserSignIn(connection,res, user, password, PortNummber,IPaddress)
           //Takes user to account and sets their directory
           await GenerateToken(res, dataRecieved.iduser, user).then((on) =>{
             if(on.SessionID != undefined){
-              res.redirect('http://' + IPaddress +':' + PortNummber+'/accountmain-page/accountmain.html')
+              res.redirect('http://' + IPaddress +':' + PortNummber+'/AccountPage')
               resolve(on)
             }
           })
