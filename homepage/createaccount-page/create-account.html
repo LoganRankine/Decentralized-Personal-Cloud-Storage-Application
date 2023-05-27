@@ -9,7 +9,27 @@
     <body class="background">
         <h1 class="title_name">PersonalCloud</h1>
 
-        <form action="/createAccount" method="POST" class="createaccount-grid">
+        <form id="form" class="createaccount-grid">
+            <h1 id="top-sign-label" class="box-margins">Create Account</h1>
+
+            <label id="dialog" class="box-error" hidden ></label>
+
+            <label class="box-labels" >Username</label>
+
+            <input id="username" type="text" name="username" required>
+
+            <label class="box-labels" >Password</label>
+
+            <input id="password" type="password" name="password" required>
+
+            <label class="box-labels">Confirm Password</label>
+
+            <input id="comfirm_password" type="password" name="confirmpassword" required>
+
+            <button id ="create" class ="createAccount" onclick="ValidateInput(); return false">Create</button>
+        </form>
+        <!--
+            <form action="/createAccount" method="POST" class="createaccount-grid">
             <h1 id="top-sign-label" class="box-margins">Create Account</h1>
 
             <label class="box-labels" >Username</label>
@@ -26,6 +46,7 @@
 
             <button id ="create" class ="createAccount" onclick="">Create</button>
         </form>
+        -->
         
 
     </body>

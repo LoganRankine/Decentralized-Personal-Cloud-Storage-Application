@@ -131,8 +131,8 @@ async function RemoveToken(p_session_ID){
 
 app.post('/createAccount', async (req, res) => {
   console.log(req.body);
-  createUser.UserValidation(connection,res, req.body.username, req.body.password, req.body.confirmpassword,IPaddress,PortNummber, FileServerIP,FileServerPort)
-  //UserValidation(res, req.body.username, req.body.password, req.body.confirmpassword);
+  createUser.UserValidation(connection,res)
+
 });
 
 app.post('/signIn', async (req, res) => {

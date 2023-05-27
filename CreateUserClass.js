@@ -1,7 +1,25 @@
 const bcrypt = require("bcrypt");
 const http = require('http');
 
-async function UserValidation(connection,res, user, password, confirm_password, IPaddress, PortNummber, FileServerIP,FileServerPort) {
+//Get 
+const file = require("./webServer_configuration.json")
+const database_config = require("./database_config.json")
+
+const FileServerIP = file.FileServerIP
+const FileServerPort = file.FileServerPort
+const IPaddress = file.WebServerIP
+const PortNummber = file.WebServerPort
+
+let user
+let password
+let confirm_password
+
+async function UserValidation(connection,res) {
+
+    user = req.body.username
+    password = req.body.passowrd
+    confirm_password = req.body.confirm_password
+
     var passwordMatch = false;
   
     //Check if passwords match

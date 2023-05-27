@@ -1,21 +1,52 @@
-let input;
-let username;
-let password;
-let confirm_password;
+let username 
+let password
+let comfirm_password
 
-var fs = require('fs');
+function ValidateInput(){
 
-const check_input = document.querySelector("#create");
-check_input.addEventListener("click", function() {
-    //get inputs recieved from user
-    console.log("inputs recieved")
-    username = document.querySelector('#username-input').ariaValueMax
-    password = document.querySelector('#password-input')
-    confirm_password = document.querySelector('#confirm-input')
+  //Get inputted values
 
-    fs.appendFile('mynewfile1.txt', username, function (err) {
-        if (err) throw err;
-        console.log('Saved!');
-      });
+  username = document.getElementById("username").value
+  password = document.getElementById("password").value
+  comfirm_password = document.getElementById("comfirm_password").value
 
-})
+  //Ensure passwords match
+  if(password == comfirm_password){
+
+    sendValidation()
+
+    return
+  }  
+
+  // passwords dont match
+  let error = document.getElementById("dialog")
+  error.hidden = false
+  error.innerHTML = "Passwords don't match"
+
+}
+
+function sendValidation(){
+  //Send request to server containing information
+  info = JSON.stringify({
+    'username' : username,
+    'password' : password,
+    'comfirm_password': comfirm_password
+  })
+  var url = new URL("/createAccount")
+  var serverValidate = fetch({method: 'POST', headers:{
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Content-Length': info.length
+    },
+    body: info})
+
+  if(serverValidate.ok){
+    return
+  }
+
+  // passwords dont match
+  let error = document.getElementById("dialog")
+  error.hidden = false
+  error.innerHTML = "Username exists"
+
+}

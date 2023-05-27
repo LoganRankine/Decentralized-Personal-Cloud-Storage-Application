@@ -16,6 +16,16 @@
     width: 30%;
 }
 
+.box-error {
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    border-radius: 2px;
+    background-color: rgb(173, 95, 95);
+    padding: 0.5rem;
+    font-weight:400;
+
+}
+
 .createaccount-grid {
     -ms-grid-row-align: center;
     -ms-grid-column-align: center;
