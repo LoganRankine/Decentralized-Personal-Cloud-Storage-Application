@@ -4,7 +4,10 @@ h1 {
 }
 
 .background {
+    /*
     background-image: linear-gradient(to right top, #051937, #004d7a, #008793, #00bf72, #a8eb12);
+    */
+    background: #8299de;
 }
 
 .title_name {
@@ -25,9 +28,10 @@ h1 {
     display: grid;
     width: 30%;
 
-    border-radius: 25px;
-    box-shadow: 1px 1px 1px 1px gray;
-    background-color: white;
+    border-radius: 50px;
+    background: #f1f1f1;
+    box-shadow:  26px 26px 51px #6f82bd,
+                -26px -26px 51px #96b0ff;
 
     justify-content: center;
     align-content: center;
@@ -36,6 +40,16 @@ h1 {
     padding-right: 2rem;
     padding-bottom: 2rem;
     margin-inline: auto;
+}
+
+.box-error {
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    border-radius: 2px;
+    background-color: rgb(173, 95, 95);
+    padding: 0.5rem;
+    font-weight:400;
+
 }
 
 .box-margins {

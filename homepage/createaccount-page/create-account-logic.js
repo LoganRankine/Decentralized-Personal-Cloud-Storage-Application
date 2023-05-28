@@ -24,27 +24,6 @@ async function ValidateInput() {
   error.innerHTML = "Passwords don't match";
 }
 
-async function getencryptionKey(){
-
-  var url = new URL("http://" + window.location.host + "/getKey")
-  let response = await fetch(url, {method: "GET"})
-
-  publickey = await response.text()
-
-  let publicobject = await window.crypto.subtle.importKey(
-    "spki",
-    publickey,
-    {
-      name: "RSA-OAEP",
-      hash: "SHA-256"
-    },
-    true,
-    ["encrypt"]
-  );
-
-  console.log(publickey)
-}
-
 async function sendValidation() {
 
   //Send request to server containing information

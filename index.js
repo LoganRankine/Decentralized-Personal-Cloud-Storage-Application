@@ -67,6 +67,10 @@ app.get("/", async (req, res) => {
   await res.render("login.ejs");
 });
 
+app.get("/login.js", async (req, res) => {
+  await res.sendFile(__dirname + "/homepage/login.js");
+});
+
 app.get("/style.css", async (req, res) => {
   await res.sendFile(__dirname + "/homepage/style.css");
 });
@@ -160,10 +164,7 @@ app.post("/signIn", async (req, res) => {
   const usertoken = await signIn.UserSignIn(
     connection,
     res,
-    req.body.username,
-    req.body.password,
-    PortNummber,
-    IPaddress
+    req
   );
   UserTokens.push(usertoken);
 });
