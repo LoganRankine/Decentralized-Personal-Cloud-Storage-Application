@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const mysql = require("mysql");
 const cors = require("cors");
+const sqlite3 = require('sqlite3').verbose();
 
 const file = require("./webServer_configuration.json");
 const database_config = require("./database_config.json");
@@ -41,6 +42,42 @@ const IPaddress = file.WebServerIP;
 const PortNummber = file.WebServerPort;
 
 app.use(cors({ origin: FileServerIP }));
+
+//SQLite data
+let sqlite = new sqlite3.Database('./Database/userData.db', (err) => {
+  if (err) {
+    console.log("Database failed to open")
+    console.error(err.message);
+  }
+  console.log('Connected to the user database.');
+})
+
+var create = "CREATE TABLE [IF NOT EXISTS] userinformation (userid INTEGER  PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE) [WITHOUT ROWID];"
+
+sqlite.serialize(()=>{
+  sqlite.run('CREATE TABLE IF NOT EXISTS userinformation (userid INTEGER  PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE) WITHOUT ROWID', (err)=>{
+    if(err){
+      console.log(err)
+    }
+    console.log("created")
+  });
+
+  sqlite.run("INSERT INTO userinformation(userid,username,password,directory, sessionID) VALUES('1','logan','password','directory','efw2233ree')", (err)=>{
+    if(err){
+      console.log(err)
+    }
+    console.log('user created')
+  })
+
+  sqlite.all('SELECT * FROM userinformation', (err, row)=>{
+    if(err){
+      console.log(err)
+    }
+
+    console.log(row.username)
+  })
+
+})
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
