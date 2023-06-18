@@ -1,1 +1,1 @@
-{"FileServerIP":"172.20.10.9","FileServerPort":3001,"WebServerIP":"172.20.10.9","WebServerPort":3000}
+{"FileServerIP":"localhost","FileServerPort":3001,"WebServerIP":"localhost","WebServerPort":3000}

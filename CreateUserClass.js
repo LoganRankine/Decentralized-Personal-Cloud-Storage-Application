@@ -1,10 +1,11 @@
 const bcrypt = require("bcrypt");
 const http = require("http");
-const crypto = require("crypto")
+const crypto = require("crypto");
 
 //Get
 const file = require("./webServer_configuration.json");
 const database_config = require("./database_config.json");
+const database_access = require("./Database/MyDataCRUD.js");
 
 const FileServerIP = file.FileServerIP;
 const FileServerPort = file.FileServerPort;
@@ -15,8 +16,7 @@ let user;
 let password;
 let confirm_password;
 
-async function UserValidation(connection, res, req) {
-
+async function UserValidation(res, req) {
   //Get information from request
   user = req.body.username;
   password = req.body.password;
@@ -24,32 +24,19 @@ async function UserValidation(connection, res, req) {
 
   //Check passwords match before continuing
   if (password == confirm_password) {
-    connection.query(
-      "SELECT * FROM user WHERE username=" + "'" + user + "'",
-      async function (err, result, fields) {
-        if (err) throw err;
+    if (await database_access.UserExist(user) == false) {
+      CreateUserAccount(
+        user,
+        password
+      );
+      res.statusCode = 200;
+      res.send("OK");
+      return
+    }
 
-        if (result.length == 0) {
-          console.log(user, "doesn't exist, creating profile");
-          CreateUserAccount(
-            user,
-            password,
-            FileServerIP,
-            FileServerPort,
-            connection
-          );
-
-          res.statusCode = 200;
-
-          res.send("OK");
-
-        } else {
-          console.log("user already exists:", user);
-          res.statusCode = 400;
-          res.send("Bad Request");
-        }
-      }
-    );
+    console.log("user already exists:", user);
+    res.statusCode = 400;
+    res.send("Bad Request");
 
     return;
   }
@@ -62,10 +49,7 @@ async function UserValidation(connection, res, req) {
 //Create user account
 async function CreateUserAccount(
   user,
-  password,
-  FileServerIP,
-  FileServerPort,
-  connection
+  password
 ) {
   plaintextPassword = password;
 
@@ -105,27 +89,13 @@ async function CreateUserAccount(
         createNewDirectory.write(createUserDirectory);
         createNewDirectory.end();
 
-        //Parses data recieved from server
-        console.log("Body:", userDirectoryFromServer);
         //Hashing passowrd
         bcrypt.genSalt(10, async (err, salt) => {
           bcrypt.hash(plaintextPassword, salt, async function (err, hash) {
-            //Create JSON object with details to add user to database
-            const userDetails = {
-              username: user,
-              password: hash,
-              userDirectory: directoryname,
-            };
 
-            //Insert new user details into SQL database
-            connection.query(
-              "INSERT INTO user SET ?",
-              userDetails,
-              async function (err, result) {
-                if (err) throw err;
-                console.log("user added:", user);
-              }
-            );
+            //Set up user profile
+            database_access.CreateUser(user, hash, directoryname);
+
           });
         });
       });
@@ -135,7 +105,7 @@ async function CreateUserAccount(
     })
     .end(createUserDirectory);
 
-  await createNewDirectory;
+  createNewDirectory;
 }
 
 module.exports = { UserValidation };

@@ -43,6 +43,7 @@ const PortNummber = file.WebServerPort;
 
 app.use(cors({ origin: FileServerIP }));
 
+
 //SQLite data
 let sqlite = new sqlite3.Database('./Database/userData.db', (err) => {
   if (err) {
@@ -54,8 +55,9 @@ let sqlite = new sqlite3.Database('./Database/userData.db', (err) => {
 
 var create = "CREATE TABLE [IF NOT EXISTS] userinformation (userid INTEGER  PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE) [WITHOUT ROWID];"
 
+/*
 sqlite.serialize(()=>{
-  sqlite.run('CREATE TABLE IF NOT EXISTS userinformation (userid INTEGER  PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE) WITHOUT ROWID', (err)=>{
+  sqlite.run('CREATE TABLE IF NOT EXISTS userinformation (userid INTEGER  PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE)', (err)=>{
     if(err){
       console.log(err)
     }
@@ -78,6 +80,7 @@ sqlite.serialize(()=>{
   })
 
 })
+*/
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
@@ -192,7 +195,7 @@ async function RemoveToken(p_session_ID) {
 
 app.post("/createAccount", async (req, res) => {
   console.log(req.body);
-  createUser.UserValidation(connection, res, req);
+  createUser.UserValidation(res, req);
 });
 
 app.post("/signIn", async (req, res) => {
