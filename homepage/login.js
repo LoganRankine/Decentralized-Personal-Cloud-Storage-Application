@@ -37,7 +37,7 @@ async function sendValidation() {
         "Content-Length": info.length,
       },
       body: info,
-    }).then((response) => {
+    }).then(async (response) => {
       if (response.ok) {
         window.location.replace("http://" + window.location.host + "/AccountPage");
         return;

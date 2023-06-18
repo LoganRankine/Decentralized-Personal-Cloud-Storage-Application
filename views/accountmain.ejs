@@ -1,4 +1,5 @@
 <html>
+    
     <head>
         <title>Account Page</title>
         <link rel="stylesheet" href="accountmain-style.css">
@@ -13,17 +14,17 @@
             
             <a id="username"><%= userName %></a>
 
-            <form action="http://<%= server_location %>upload" method="post" enctype="multipart/form-data">
+            <form id="form">
                 <input onchange="fileSelect()" type="file" name="filetoupload" id="upload" hidden="hidden">
                 <label class= "upload-button" for="upload">Choose file</label>
                 <label id="filename"></label>
-                <input type="submit" id="submit" hidden>
+                <input onclick="UploadFile();return false" type="submit" id="submit" hidden>
                 <label for="submit" class="upload-button" id="uploadButton">Upload</label>
-                <input hidden="hidden" name="username" id="username" value="<%= userName %>" />
+                
             </form>
         </div>
         
-        <div class="showFiles">
+        <div id="files" class="showFiles">
             <a class="columnHeader">
                 <label class="imageName-header">Filename</label>
                 <label class="fileType-header">File Type</label>

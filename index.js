@@ -111,11 +111,7 @@ app.get("/AccountPage", async (req, res) => {
       user,
       res,
       req,
-      connection,
-      FileServerIP,
-      FileServerPort,
-      IPaddress,
-      PortNummber
+      connection
     );
   }
 });
@@ -128,6 +124,10 @@ app.get("/accountmain-style.css", async (req, res) => {
 
 app.get("/scriptFile/accountmain-script.js", async (req, res) => {
   await res.sendFile(__dirname + "/views/scriptFile/accountmain-script.js");
+});
+
+app.get("/scriptFile/loadFiles.js", async (req, res) => {
+  await res.sendFile(__dirname + "/views/scriptFile/loadFiles.js");
 });
 
 app.delete("/Logout", async (req, res) => {

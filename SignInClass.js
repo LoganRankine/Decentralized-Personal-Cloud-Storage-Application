@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const file = require("./webServer_configuration.json");
 const IPaddress = file.WebServerIP;
 const PortNummber = file.WebServerPort;
+var session
 
 async function UserSignIn(
   connection,
@@ -37,10 +38,10 @@ async function UserSignIn(
             (await comparePassword(password, dataRecieved.password)) == true
           ) {
             //Takes user to account and sets their directory
-            await GenerateToken(res, dataRecieved.iduser, user).then((on) => {
+            var token = await GenerateToken(res, dataRecieved.iduser, user, dataRecieved.userDirectory).then((on) => {
               if (on.SessionID != undefined) {
                 res.statusCode = 200
-                res.send("OK")
+                res.send(session)
                 resolve(on);
               }
             });
@@ -61,20 +62,20 @@ async function comparePassword(password, hash) {
   return result;
 }
 
-async function GenerateToken(res, id, name) {
+async function GenerateToken(res, id, name, directoryname) {
   //Generate random string to be used as cookie token
   const newUserToken = crypto.randomBytes(20).toString("base64url");
 
   //Cookie options
   const options = {
     maxAge: 1000 * 60 * 15, // would expire after 15 minutes
-    httpOnly: true, // The cookie only accessible by the web server
+     // The cookie only accessible by the web server
   };
   //set cookie
   res.cookie("SessionID", newUserToken, options);
 
-  const user = { SessionID: newUserToken, UserID: id, UserName: name };
-
+  const user = { SessionID: newUserToken, UserID: id, UserName: name, userDirectory: directoryname};
+  session = newUserToken
   return user;
   //res.cookie('userID', dataRecieved.iduser, options)
   //res.cookie('userName', dataRecieved.username,options)

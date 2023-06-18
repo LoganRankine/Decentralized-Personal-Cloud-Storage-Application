@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const http = require("http");
+const crypto = require("crypto")
 
 //Get
 const file = require("./webServer_configuration.json");
@@ -68,9 +69,12 @@ async function CreateUserAccount(
 ) {
   plaintextPassword = password;
 
+  //generate random string for directory name
+  var directoryname = crypto.randomBytes(10).toString("base64url");
+
   //Turns username into a JOSN object
   let createUserDirectory = JSON.stringify({
-    user: user,
+    user: directoryname,
   });
 
   // options to send to storage server and puts username in header so server knows what to
@@ -95,7 +99,6 @@ async function CreateUserAccount(
         //Puts chunked data recieved into a variable
         userDirectoryFromServer += chunk;
       });
-
       // Ending the response
       res.on("end", () => {
         //Ends stream to server
@@ -103,8 +106,7 @@ async function CreateUserAccount(
         createNewDirectory.end();
 
         //Parses data recieved from server
-        console.log("Body:", JSON.parse(userDirectoryFromServer));
-        let directory = JSON.parse(userDirectoryFromServer);
+        console.log("Body:", userDirectoryFromServer);
         //Hashing passowrd
         bcrypt.genSalt(10, async (err, salt) => {
           bcrypt.hash(plaintextPassword, salt, async function (err, hash) {
@@ -112,7 +114,7 @@ async function CreateUserAccount(
             const userDetails = {
               username: user,
               password: hash,
-              userDirectory: directory.CreatedDirectory,
+              userDirectory: directoryname,
             };
 
             //Insert new user details into SQL database

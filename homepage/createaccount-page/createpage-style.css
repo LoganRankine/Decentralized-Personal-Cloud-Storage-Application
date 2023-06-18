@@ -1,5 +1,22 @@
 .background {
+    /*
     background-image: linear-gradient(to right top, #051937, #004d7a, #008793, #00bf72, #a8eb12);
+    */
+    background: #8299de;
+}
+
+.box-inputs {
+    width: 60%;
+    align-self: center;
+}
+
+.create-button{
+    background-color: rgb(5, 98, 197);
+    border-radius: 5px;
+    color: white;
+    border-color: white;
+    width: 50%;
+    margin-top: 1rem;
 }
 
 .title_name {
@@ -33,9 +50,10 @@
     display: grid;
     width: 30%;
 
-    border-radius: 25px;
-    box-shadow: 1px 1px 1px 1px gray;
-    background-color: white;
+    border-radius: 50px;
+    background: #f1f1f1;
+    box-shadow:  26px 26px 51px #6f82bd,
+                -26px -26px 51px #96b0ff;
 
     padding-left: 2rem;
     padding-right: 2rem;
