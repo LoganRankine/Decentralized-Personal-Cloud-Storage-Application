@@ -45,18 +45,60 @@ async function UserExist(username) {
             console.error(err);
           }
           console.log(row);
-          if ((row.length == 1)) {
+          if (row.length == 1) {
             console.log(username, "exists");
             resolve(true);
-            return
+            db.close();
+            return;
           }
 
           reject(false);
-          return
+          db.close();
+          return;
         }
       );
     }
   });
 }
 
-module.exports = { CreateUser, UserExist };
+async function UserExistObject(username) {
+  let db = await ConnectToDB();
+  return new Promise((resolve, reject) => {
+    if (db != undefined) {
+      db.all(
+        `SELECT * FROM userinformation WHERE username = '${username}'`,
+        (err, result) => {
+          if (err) {
+            console.error(err);
+          }
+          console.log(result);
+          if (result.length == 1) {
+            console.log(username, "exists");
+            resolve(result[0]);
+            return;
+          }
+
+          reject(undefined);
+          return;
+        }
+      );
+    }
+  });
+}
+
+async function AddUserToken(username, token) {
+  try {
+    let db = await ConnectToDB();
+    if (db != undefined) {
+      db.run(
+        `UPDATE userinformation SET sessionID = '${token}' WHERE username = '${username}'`
+      );
+      return true
+    }
+  } catch {
+    return false
+  }
+  return false
+}
+
+module.exports = { CreateUser, UserExist, UserExistObject, AddUserToken };

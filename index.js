@@ -201,12 +201,10 @@ app.post("/createAccount", async (req, res) => {
 app.post("/signIn", async (req, res) => {
   console.log(req.body);
 
-  const usertoken = await signIn.UserSignIn(
-    connection,
+  await signIn.UserSignIn(
     res,
     req
   );
-  UserTokens.push(usertoken);
 });
 
 app.delete("/delete/*", async (req, res) => {
