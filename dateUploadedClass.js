@@ -1,9 +1,19 @@
-async function dateUploaded(connection,req,res){
-    const r_username = req.body.user
-    const r_filename = req.body.filename
-    const r_dateuploaded = req.body.dateuploaded
-    const r_fileType = req.body.filetype
-  
+const database_access = require("./Database/MyDataCRUD.js");
+
+async function dateUploaded(req, res, sessionID) {
+
+  var userInformation = await database_access.UserExistSessionID(sessionID)
+
+  const fileInformation = req.body
+
+  //get information to add
+  if(userInformation != undefined){
+
+    database_access.AddFileInformation(fileInformation, userInformation)
+    //provide userID, filename, uploadDate, file type
+  }
+
+  /*
     //Get the users ID from database
     connection.query("SELECT * FROM user WHERE username=" + "'" + r_username + "'", async function (err, userID) {
       if (err) throw err;
@@ -23,5 +33,6 @@ async function dateUploaded(connection,req,res){
         })
       })
     })
+    */
 }
-module.exports = {dateUploaded}
+module.exports = { dateUploaded };

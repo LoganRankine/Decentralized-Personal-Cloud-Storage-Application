@@ -21,6 +21,7 @@ const createUser = require("./CreateUserClass");
 const userPage = require("./UserPageClass");
 const renameFile = require("./RenameFileClass");
 const dateUploaded = require("./dateUploadedClass");
+const database_access = require("./Database/MyDataCRUD.js");
 
 //Generate public private key
 const {publicKey, privateKey} = crypto.generateKeyPairSync("rsa",{modulusLength:4096});
@@ -55,15 +56,53 @@ let sqlite = new sqlite3.Database('./Database/userData.db', (err) => {
 
 var create = "CREATE TABLE [IF NOT EXISTS] userinformation (userid INTEGER  PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE) [WITHOUT ROWID];"
 
-/*
+
 sqlite.serialize(()=>{
-  sqlite.run('CREATE TABLE IF NOT EXISTS userinformation (userid INTEGER  PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE)', (err)=>{
+
+  /*sqlite.each(`SELECT userinformation.userid FROM userinformation WHERE sessionID = '_pyrQMOKDWPV-NbnrfhWdIk2DRg'`, (err,result)=>{
+    console.log(result)
+  })*/
+  
+  /*
+  sqlite.run('CREATE TABLE IF NOT EXISTS userinformation (userid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT)', (err)=>{
     if(err){
       console.log(err)
     }
-    console.log("created")
+    console.log("user information table created")
   });
 
+  sqlite.run('CREATE TABLE IF NOT EXISTS fileinformation (fileid INTEGER  PRIMARY KEY AUTOINCREMENT, filetoken TEXT NOT NULL,filename TEXT NOT NULL UNIQUE, uploadDate TEXT NOT NULL, filetype TEXT NOT NULL)', (err)=>{
+    if(err){
+      console.log(err)
+    }
+    console.log("file information table created")
+  });
+
+  sqlite.run('CREATE TABLE IF NOT EXISTS fileids (fileid INTEGER  NOT NULL, userid INTEGER NOT NULL, PRIMARY KEY(fileid, userid),FOREIGN KEY(fileid) REFERENCES fileinformation (fileid) ON UPDATE CASCADE ON DELETE CASCADE, FOREIGN KEY(userid) REFERENCES userinformation (userid) ON UPDATE CASCADE ON DELETE CASCADE)', (err)=>{
+    if(err){
+      console.log(err)
+    }
+    console.log("file ids table created")
+  });
+  /*
+
+  sqlite.each('SELECT * FROM fileids', (err, row)=>{
+    if(err){
+      console.log(err)
+    }
+
+    console.log(row)
+  })
+
+  sqlite.each('SELECT * FROM fileinformation', (err, row)=>{
+    if(err){
+      console.log(err)
+    }
+
+    console.log(row)
+  })
+  */
+/*
   sqlite.run("INSERT INTO userinformation(userid,username,password,directory, sessionID) VALUES('1','logan','password','directory','efw2233ree')", (err)=>{
     if(err){
       console.log(err)
@@ -78,9 +117,8 @@ sqlite.serialize(()=>{
 
     console.log(row.username)
   })
-
+  */
 })
-*/
 
 //Create connection to MySQL database
 var connection = mysql.createConnection({
@@ -98,10 +136,18 @@ connection.connect(async function (err) {
 });
 
 //adds the date the file was uploaded
-app.post("/dateUploaded", async (req, res) => {
-  //
-  await dateUploaded.dateUploaded(connection, req, res);
+app.post("/addFileToDB?*", async (req, res) => {
+  //Get sessionID from request
+  var sessionID = req.url.replace("/addFileToDB?sessionID=", "");
+  await dateUploaded.dateUploaded(req, res, sessionID);
 });
+
+app.get("/authoriseUser?*", async (req,res)=>{
+    //Get sessionID from request
+    var sessionID = req.url.replace("/authoriseUser?sessionID=", "");
+    res.send(await database_access.UserExistSessionID(sessionID))
+  
+})
 
 app.get("/", async (req, res) => {
   await res.render("login.ejs");
@@ -140,19 +186,28 @@ app.get("/AccountPage", async (req, res) => {
     res.send("Session expired");
     //res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
   } else {
-    let sessionID = req.cookies.SessionID;
-    let user;
-    UserTokens.forEach((element) => {
-      if (element.SessionID == sessionID) {
-        user = element;
-      }
+    res.render("accountmain.ejs", {
+      userName: 'testing',
+      ImageSource: undefined,
     });
-    userPage.GetUserImages(
-      user,
+    
+  }
+});
+
+app.get("/getFiles?*", async (req, res) => {
+  var sessionID = req.url.replace("/getFiles?SessionID=", "");
+  console.log("Session:",sessionID, "request to get file information");
+
+
+  if (sessionID == null) {
+    res.send("Session expired");
+    //res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
+  } else {
+    res.send(await userPage.GetUserImages(
       res,
-      req,
-      connection
-    );
+      sessionID
+    ))
+    
   }
 });
 

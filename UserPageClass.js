@@ -1,4 +1,5 @@
 const http = require("http");
+const database_access = require("./Database/MyDataCRUD.js");
 const file = require("./webServer_configuration.json");
 const FileServerIP = file.FileServerIP;
 const FileServerPort = file.FileServerPort;
@@ -6,36 +7,47 @@ const IPaddress = file.WebServerIP;
 const PortNummber = file.WebServerPort;
 
 //Gets all the locations of files stored on file storage
-async function GetUserImages(p_userID, res, req, connection) {
-  let sql =
-    "SELECT fileinformation.filename, fileinformation.dateuploaded, fileinformation.filetype, fileinformation.FileID FROM fileid JOIN user on fileid.UserID=user.iduser JOIN fileinformation on fileid.FileID=fileinformation.FileID WHERE FileID.UserID=" +
-    p_userID.UserID;
-  connection.query(sql, async function (err, result) {
-    if (err) throw err;
+async function GetUserImages(res, sessionID) {
+  var fileinformation = await database_access.GetFileInformation(sessionID);
+  return new Promise((resolve, reject) => {
 
-    parsedData = result;
-    //Checks whether there is data that has been sent
-    if (parsedData != undefined) {
-      //Send ALL entries retrieved from database to store server- Retruns with random token
-      const files = await GetFileToken(
-        p_userID,
-        parsedData
-      );
-      res.render("accountmain.ejs", {
-        count: 1,
-        SessionID: p_userID.SessionID,
-        userName: p_userID.UserName,
-        Image: files,
-        server_location: FileServerIP + ":" + FileServerPort + "/",
-        webserver_location: IPaddress + ":" + PortNummber,
-      });
-    } else {
-      res.render("accountmain.ejs", {
-        userName: p_userID.UserName,
-        ImageSource: undefined,
-      });
+    if(fileinformation != undefined){
+      resolve(fileinformation)
+      return fileinformation;
     }
+    //Get file information from database
+
+    /*
+  res.render("accountmain.ejs", {
+    userName: 'testing',
+    ImageSource: undefined,
   });
+  */
+
+    
+  });
+
+  /*
+  parsedData = result;
+  //Checks whether there is data that has been sent
+  if (parsedData != undefined) {
+    //Send ALL entries retrieved from database to store server- Retruns with random token
+    const files = await GetFileToken(p_userID, parsedData);
+    res.render("accountmain.ejs", {
+      count: 1,
+      SessionID: p_userID.SessionID,
+      userName: p_userID.UserName,
+      Image: files,
+      server_location: FileServerIP + ":" + FileServerPort + "/",
+      webserver_location: IPaddress + ":" + PortNummber,
+    });
+  } else {
+    res.render("accountmain.ejs", {
+      userName: p_userID.UserName,
+      ImageSource: undefined,
+    });
+  }
+  */
 }
 
 async function GetFileToken(p_user, p_userFiles) {
