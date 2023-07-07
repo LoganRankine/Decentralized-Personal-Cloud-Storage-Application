@@ -1,20 +1,18 @@
-async function RenameFile(connection, body, userid){
-    return new Promise((resolve, reject) => {
-    const fileid = body.fileid
-    
-    const rename = body.name
-    const query = "UPDATE `userprofile`.`fileinformation` SET `filename` = '" + rename +"' WHERE (`FileID` = '"+ fileid +"');"
-    connection.query(query, async function (err, result, fields){
-        if(err){ 
-            console.log(err)
-            reject(err)
-        }
-        resolve()
-        console.log('file renamed')
-    })
+const database_access = require("./Database/MyDataCRUD.js");
 
-    })
-    
+async function RenameFile(req, res) {
+  return new Promise(async (resolve, reject) => {
+    //Get request ID
+    let sessionID = req.query["sessionID"];
+
+    //Information to change filename
+    let fileID = req.query["fileid"];
+    let NewFilename = req.body.newFilename;
+
+    //Send response
+    res.send(await database_access.RenameFileInformation(sessionID, fileID, NewFilename))
+    resolve()
+  });
 }
 
-module.exports = {RenameFile}
+module.exports = { RenameFile };

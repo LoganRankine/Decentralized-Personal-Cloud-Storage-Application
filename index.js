@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const mysql = require("mysql");
 const cors = require("cors");
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require("sqlite3").verbose();
 
 const file = require("./webServer_configuration.json");
 const database_config = require("./database_config.json");
@@ -21,11 +21,14 @@ const createUser = require("./CreateUserClass");
 const userPage = require("./UserPageClass");
 const renameFile = require("./RenameFileClass");
 const dateUploaded = require("./dateUploadedClass");
+const deleteFile = require("./DeleteFileClass");
 const database_access = require("./Database/MyDataCRUD.js");
 
 //Generate public private key
-const {publicKey, privateKey} = crypto.generateKeyPairSync("rsa",{modulusLength:4096});
-let publicstring
+const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
+  modulusLength: 4096,
+});
+let publicstring;
 
 let UserTokens = [];
 
@@ -44,25 +47,22 @@ const PortNummber = file.WebServerPort;
 
 app.use(cors({ origin: FileServerIP }));
 
-
 //SQLite data
-let sqlite = new sqlite3.Database('./Database/userData.db', (err) => {
+let sqlite = new sqlite3.Database("./Database/userData.db", (err) => {
   if (err) {
-    console.log("Database failed to open")
+    console.log("Database failed to open");
     console.error(err.message);
   }
-  console.log('Connected to the user database.');
-})
+  console.log("Connected to the user database.");
+});
 
-var create = "CREATE TABLE [IF NOT EXISTS] userinformation (userid INTEGER  PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE) [WITHOUT ROWID];"
+var create =
+  "CREATE TABLE [IF NOT EXISTS] userinformation (userid INTEGER  PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT UNIQUE) [WITHOUT ROWID];";
 
-
-sqlite.serialize(()=>{
-
+sqlite.serialize(() => {
   /*sqlite.each(`SELECT userinformation.userid FROM userinformation WHERE sessionID = '_pyrQMOKDWPV-NbnrfhWdIk2DRg'`, (err,result)=>{
     console.log(result)
   })*/
-  
   /*
   sqlite.run('CREATE TABLE IF NOT EXISTS userinformation (userid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, directory TEXT NOT NULL UNIQUE, sessionID TEXT)', (err)=>{
     if(err){
@@ -102,7 +102,7 @@ sqlite.serialize(()=>{
     console.log(row)
   })
   */
-/*
+  /*
   sqlite.run("INSERT INTO userinformation(userid,username,password,directory, sessionID) VALUES('1','logan','password','directory','efw2233ree')", (err)=>{
     if(err){
       console.log(err)
@@ -118,9 +118,10 @@ sqlite.serialize(()=>{
     console.log(row.username)
   })
   */
-})
+});
 
 //Create connection to MySQL database
+/*
 var connection = mysql.createConnection({
   host: database_config.host,
   user: database_config.user,
@@ -135,6 +136,8 @@ connection.connect(async function (err) {
   console.log("connected");
 });
 
+*/
+
 //adds the date the file was uploaded
 app.post("/addFileToDB?*", async (req, res) => {
   //Get sessionID from request
@@ -142,12 +145,11 @@ app.post("/addFileToDB?*", async (req, res) => {
   await dateUploaded.dateUploaded(req, res, sessionID);
 });
 
-app.get("/authoriseUser?*", async (req,res)=>{
-    //Get sessionID from request
-    var sessionID = req.url.replace("/authoriseUser?sessionID=", "");
-    res.send(await database_access.UserExistSessionID(sessionID))
-  
-})
+app.get("/authoriseUser?*", async (req, res) => {
+  //Get sessionID from request
+  var sessionID = req.url.replace("/authoriseUser?sessionID=", "");
+  res.send(await database_access.UserExistSessionID(sessionID));
+});
 
 app.get("/", async (req, res) => {
   await res.render("login.ejs");
@@ -187,27 +189,21 @@ app.get("/AccountPage", async (req, res) => {
     //res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
   } else {
     res.render("accountmain.ejs", {
-      userName: 'testing',
+      userName: "testing",
       ImageSource: undefined,
     });
-    
   }
 });
 
 app.get("/getFiles?*", async (req, res) => {
   var sessionID = req.url.replace("/getFiles?SessionID=", "");
-  console.log("Session:",sessionID, "request to get file information");
-
+  console.log("Session:", sessionID, "request to get file information");
 
   if (sessionID == null) {
     res.send("Session expired");
     //res.redirect('http://' + IPaddress +':'+ PortNummber+'/');
   } else {
-    res.send(await userPage.GetUserImages(
-      res,
-      sessionID
-    ))
-    
+    res.send(await userPage.GetUserImages(res, sessionID));
   }
 });
 
@@ -256,69 +252,30 @@ app.post("/createAccount", async (req, res) => {
 app.post("/signIn", async (req, res) => {
   console.log(req.body);
 
-  await signIn.UserSignIn(
-    res,
-    req
-  );
+  await signIn.UserSignIn(res, req);
 });
 
-app.delete("/delete/*", async (req, res) => {
-  ///delete/Euu7McoxAJSM4qr25C02meZcPSw/37
-  //get url
-  let URLrequest = req.url.toString();
-  //Split and get which user is making request
-  let userToken = URLrequest.split("/")[2];
-  //Split and get what file needs removing
-  let fileID = URLrequest.split("/")[3];
+app.delete("/delete?*", async (req, res) => {
+  
+  deleteFile.DeleteFile(req, res)
 
-  //Find the user details making request
-  UserTokens.forEach((user) => {
-    if (user.SessionID == userToken) {
-      const currentUser = user;
-      const sqlQuery =
-        "DELETE FROM `userprofile`.`fileinformation` WHERE (`FileID` = '" +
-        fileID +
-        "')";
-      const sqlQuery2 =
-        "DELETE FROM `userprofile`.`fileid` WHERE (`FileID` = '" +
-        fileID +
-        "') and (`UserID` = '" +
-        currentUser.iduser +
-        "');";
-      connection.query(sqlQuery, async function (err, result, fields) {
-        console.log(result);
-      });
-      connection.query(sqlQuery2, async function (err, result, fields) {
-        console.log(result);
-      });
-      console.log("User found", user.UserName);
-    }
-  });
   console.log("deleting file");
 });
 
-app.put("/rename", async (req, res) => {
+app.put("/rename?*", async (req, res) => {
   console.log(req.body);
   console.log("rename request recieved");
 
-  const b_user = req.body.user;
-
-  UserTokens.forEach(async (user) => {
-    if (user.SessionID == b_user) {
-      await renameFile.RenameFile(connection, req.body, user.UserID);
-      res.send("OK");
-    }
-  });
+  await renameFile.RenameFile(req, res);
+  res.send("OK");
 });
 
-app.get("/getKey", async(req,res)=>{
+app.get("/getKey", async (req, res) => {
+  publicstring = publicKey.export({ format: "pem", type: "spki" });
+  publicstring = publicstring.replace("-----BEGIN RSA PUBLIC KEY-----\n", "");
+  publicstring = publicstring.replace("\n-----END RSA PUBLIC KEY-----\n", "");
 
-  publicstring = publicKey.export({format: 'pem', type: 'spki'});
-  publicstring = publicstring.replace("-----BEGIN RSA PUBLIC KEY-----\n", "")
-  publicstring = publicstring.replace("\n-----END RSA PUBLIC KEY-----\n","")
-
-  res.send(publicstring)
-
+  res.send(publicstring);
 });
 
 app.all("*", async (req, res) => {
@@ -328,8 +285,6 @@ app.all("*", async (req, res) => {
 app.get("/test/newUserCreated", async (res, req) => {
   res.send("newUserCreated");
 });
-
-
 
 app.listen(PortNummber, (req, res) => {
   console.log(

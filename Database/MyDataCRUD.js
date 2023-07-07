@@ -99,6 +99,7 @@ async function UserExistSessionID(sessionid) {
         (err, result) => {
           if (err) {
             console.error(err);
+            throw err;
             db.close();
           }
           console.log(result);
@@ -108,14 +109,12 @@ async function UserExistSessionID(sessionid) {
             db.close();
             return result;
           }
-
           resolve(undefined);
           db.close();
           return undefined;
         }
       );
     }
-    return undefined;
   });
 }
 
@@ -140,7 +139,6 @@ async function GetFileInformation(sessionid) {
 
   return new Promise((resolve, reject) => {
     try {
-      
       if (db != undefined) {
         db.each(
           `SELECT userinformation.userid FROM userinformation WHERE sessionID = '${sessionid}'`,
@@ -158,16 +156,17 @@ async function GetFileInformation(sessionid) {
                   console.error(err);
                 }
                 console.log(result);
-                resolve(result)
+                resolve(result);
                 return result;
               }
             );
           }
         );
       }
-    } catch(err) {console.error(err)}
-  })
-  
+    } catch (err) {
+      console.error(err);
+    }
+  });
 }
 
 async function AddFileInformation(fileInformation, userInformation) {
@@ -178,17 +177,160 @@ async function AddFileInformation(fileInformation, userInformation) {
         `INSERT INTO fileinformation (filetoken, filename, uploadDate, filetype) VALUES('${fileInformation.filetoken}','${fileInformation.filename}','${fileInformation.dateuploaded}', '${fileInformation.filetype}')`,
         function (err) {
           if (err) throw err;
-          
-          db.run(`INSERT INTO fileids (fileid, userid) VALUES('${this.lastID}', '${userInformation.userid}')`,
-          function(err){
-            if(err) throw err;
-            console.log(`${userInformation.username} file: ${fileInformation.filename} added to database`);
-          })
+
+          db.run(
+            `INSERT INTO fileids (fileid, userid) VALUES('${this.lastID}', '${userInformation.userid}')`,
+            function (err) {
+              if (err) throw err;
+              console.log(
+                `${userInformation.username} file: ${fileInformation.filename} added to database`
+              );
+            }
+          );
         }
       );
     }
   } catch {}
 }
+
+async function RenameFileInformation(sessionID, fileID, newFilename) {
+  //Ensure sessionID is valid
+  let userInformation = await UserExistSessionID(sessionID);
+  if (userInformation == undefined) {
+    return "sessionID does not exist";
+  }
+
+  let db = await ConnectToDB();
+
+  return new Promise((resolve, reject) => {
+    try {
+      db.run(
+        `UPDATE fileinformation SET filename = '${newFilename}' WHERE fileid = '${fileID}'`,
+        function (err) {
+          if (err) throw err;
+          console.log(this.changes);
+
+          //Changes were made
+          if (this.changes > 0) {
+            console.log(
+              `${sessionID}: file:${fileID} name changed to ${newFilename}`
+            );
+            resolve("Filename update- successful");
+            return;
+          }
+
+          console.log(
+            `${sessionID}: file:${fileID} was not found- no rename operation done`
+          );
+          resolve("fileid not found");
+          return;
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      resolve("Database error occured");
+      return;
+    }
+  });
+}
+
+async function DeleteFileInformation(sessionID, fileID) {
+  let userinformation = await UserExistSessionID(sessionID);
+  if (userinformation == undefined) {
+    return "SessionID does not exist";
+  }
+
+  let db = await ConnectToDB();
+  return new Promise((resolve, reject) => {
+    try {
+      if (db != undefined) {
+        //Get file information
+
+        db.all(
+          `SELECT fileinformation.filetoken FROM fileinformation WHERE fileid = '${fileID}'`,
+          (err, result) => {
+            if (err) throw err;
+            console.log(result);
+
+            db.run(
+              `DELETE FROM fileinformation WHERE fileid = ${fileID}`,
+              async function (err) {
+                if (err) throw err;
+                //Has file been deleted
+                if (this.changes > 0) {
+                  //send directoryname and filetoken
+                  let response = JSON.stringify({
+                    directoryname: userinformation.directory,
+                    filetoken: result,
+                  });
+                  console.log(response)
+                  console.log(fileID , "File deleted")
+                  resolve(response);
+                  return;
+                }
+                db.close();
+                console.log("File doesn't exist")
+                resolve("File doesn't exist");
+                return;
+              }
+            );
+          }
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+}
+
+/*
+async function DeleteFileInformation(sessionID, fileID) {
+  //Get userinformation from db
+  let userinformation = await UserExistSessionID(sessionID);
+  if (userinformation == undefined) {
+    return "SessionID does not exist";
+  }
+
+  let db = await ConnectToDB();
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (db != undefined) {
+        //Get file information
+        db.serialize(async () => {
+          db.each(
+            `SELECT fileinformation.filetoken FROM fileinformation WHERE fileid = '${fileID}'`,
+            async (err, result) => {
+              if (err) throw err;
+
+              db.run(
+                `DELETE FROM fileinformation WHERE fileid = ${fileID}`,
+                async function (err) {
+                  if (err) throw err;
+                  //Has file been deleted
+                  if (this.changes > 0) {
+                    //send directoryname and filetoken
+                    let response = JSON.stringify({
+                      directoryname: userinformation.directory,
+                      filetoken: result,
+                    });
+                    resolve(response);
+                    return;
+                  }
+                  db.close();
+                  resolve("File doesn't exist");
+                  return;
+                }
+              );
+            }
+          );
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+}
+*/
 
 module.exports = {
   CreateUser,
@@ -198,4 +340,6 @@ module.exports = {
   GetFileInformation,
   AddFileInformation,
   UserExistSessionID,
+  RenameFileInformation,
+  DeleteFileInformation,
 };
